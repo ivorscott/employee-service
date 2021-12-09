@@ -1,4 +1,6 @@
-# Branch Policy
+# Dev Branch Policy
+
+trigger: none
 
 resources:
 - repo: self
