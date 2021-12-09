@@ -51,7 +51,7 @@ stages:
     displayName: Deploy
     pool:
       vmImage: $(vmImageName)
-    environment: 'employeeservice-7242.default'
+    environment: 'employee-service.default'
     strategy:
       runOnce:
         deploy:
