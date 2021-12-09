@@ -1,0 +1,43 @@
+# Branch Policy
+
+resources:
+- repo: self
+
+variables:
+  imageRepository: 'employeeservice'
+  containerRegistry: 'devpielabsregistry'
+  dockerfilePath: '**/Dockerfile'
+  tag: '$(Build.BuildId)'
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Go@0
+      displayName: Compile program
+      inputs:
+        command: 'build'
+        arguments: './cmd/employee'
+
+    - task: Go@0
+      displayName: Run Tests
+      inputs:
+        command: 'test'
+        arguments: '-v -race ./...'
+
+    - task: Docker@2
+      displayName: Build image 
+      inputs:
+        command: build
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(containerRegistry)
+        tags: |
+          $(tag)
+
