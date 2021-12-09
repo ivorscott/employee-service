@@ -8,7 +8,7 @@ Test Go Service
 go run ./cmd/employee
 ```
 
-Two hardcoded users exist. Example requests:
+Two hardcoded users exist. Example:
 ```
 curl -v -X GET http://localhost:8080/employees/0 | jq
 
