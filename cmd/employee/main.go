@@ -68,8 +68,8 @@ func EmployeesHandler(w http.ResponseWriter, r *http.Request) {
 	e := map[int]Employee{
 		0: {
 			ID:        0,
-			FirstName: "Adam",
-			LastName:  "Smith",
+			FirstName: "Alan",
+			LastName:  "Watts",
 			Job:       "Philosopher",
 		},
 		1: {
