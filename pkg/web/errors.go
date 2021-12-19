@@ -2,14 +2,14 @@ package web
 
 import "errors"
 
-// Error adds web information to request error
+// Error adds web information to request error.
 type Error struct {
 	Err    error
 	Status int
 	Fields []FieldError
 }
 
-// Error returns the string error
+// Error returns the string error.
 func (e *Error) Error() string {
 	return e.Err.Error()
 }
@@ -34,7 +34,7 @@ func NewShutdownError(message string) error {
 	return &shutdown{message}
 }
 
-// IsShutdown checks to see if the shutdown error exists
+// IsShutdown checks to see if the shutdown error exists.
 func IsShutdown(err error) bool {
 	var targetErr *shutdown
 	return errors.Is(err, targetErr)

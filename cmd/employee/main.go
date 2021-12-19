@@ -51,7 +51,6 @@ func run() error {
 
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			fmt.Errorf("server error on startup : %w", err)
 			err = srv.Close()
 		}
 

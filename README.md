@@ -40,3 +40,43 @@ curl -v -X GET http://localhost:8080/employees/abc | jq
   "error": "bad request"
 }
 ```
+
+# To Do 
+
+[ ] add swagger
+
+[ ] add elasticsearch
+
+[ ] add interfaces
+
+[ ] add postgres
+
+[ ] add fixtures
+
+[ ] add tests
+
+[ ] add goldenfiles
+
+[ ] add kubernetes
+
+[ ] add auth
+
+[ ] add tracing
+
+[ ] add redis
+
+[ ] add nats jetstream
+
+[ ] add prometheus
+
+[ ] add graphana
+
+[ ] add example requests
+
+[ ] add terraform
+
+[ ] add makefile
+
+[ ] add zappr
+
+[ ] add ci workflow

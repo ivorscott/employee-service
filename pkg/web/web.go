@@ -1,19 +1,22 @@
+// Package web provides a custom web framework.
 package web
 
 import (
 	"context"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
-// Handler represents a custom http handler that returns an error
+// Handler represents a custom http handler that returns an error.
 type Handler func(http.ResponseWriter, *http.Request) error
 
+// App represents a new application.
 type App struct {
 	log      *log.Logger
 	mux      *mux.Router

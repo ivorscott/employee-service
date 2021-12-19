@@ -8,12 +8,10 @@ import (
 	"time"
 )
 
-// Logger writes some information about the request to the logs in the
+// Logger writes some information about the request to the logs.
 func Logger(log *log.Logger) web.Middleware {
-
 	// This is the actual middleware function to be executed.
 	f := func(before web.Handler) web.Handler {
-
 		// Create the handler that will be attached in the middleware chain.
 		h := func(w http.ResponseWriter, r *http.Request) error {
 			v, ok := r.Context().Value(web.KeyValues).(*web.Values)

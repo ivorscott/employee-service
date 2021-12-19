@@ -3,13 +3,17 @@ package handlers
 import (
 	"employee-service/pkg/models"
 	"employee-service/pkg/web"
-	"github.com/gorilla/mux"
+
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
+// Employee service.
 type Employee struct{}
 
+// GetEmployee retrieves an employee.
 func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	eMap := map[int]models.Employee{
@@ -34,7 +38,6 @@ func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
 
 	if employee, ok := eMap[id]; ok {
 		return web.Respond(r.Context(), w, employee, http.StatusOK)
-	} else {
-		return web.Respond(r.Context(), w, nil, http.StatusNotFound)
 	}
+	return web.Respond(r.Context(), w, nil, http.StatusNotFound)
 }

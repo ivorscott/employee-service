@@ -1,3 +1,4 @@
+// Package handlers contains application handlers and routes.
 package handlers
 
 import (

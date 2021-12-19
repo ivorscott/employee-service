@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 )
 
-// Respond send a response back to the client
+// Respond send a response back to the client.
 func Respond(ctx context.Context, w http.ResponseWriter, val interface{}, statusCode int) error {
 	if v, ok := ctx.Value(KeyValues).(*Values); ok {
 		v.StatusCode = statusCode
-		log.Println(statusCode)
 	}
 
 	if statusCode == http.StatusNoContent {
