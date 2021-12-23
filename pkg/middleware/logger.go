@@ -1,35 +1,40 @@
 package middleware
 
 import (
-	"employee-service/pkg/web"
-	"errors"
-	"log"
+	"fmt"
+	"github.com/ivorscott/employee-service/pkg/web"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
 
 // Logger writes some information about the request to the logs.
-func Logger(log *log.Logger) web.Middleware {
+func Logger(log *zap.Logger) web.Middleware {
 	// This is the actual middleware function to be executed.
 	f := func(before web.Handler) web.Handler {
 		// Create the handler that will be attached in the middleware chain.
 		h := func(w http.ResponseWriter, r *http.Request) error {
 			v, ok := r.Context().Value(web.KeyValues).(*web.Values)
 			if !ok {
-				return errors.New("web value missing from context")
+				return fmt.Errorf("web value missing from context")
 			}
 
 			err := before(w, r)
 
-			// format: GET /foo
-			log.Printf("(%d) : %s %s (%s)",
-				v.StatusCode,
-				r.Method,
-				r.URL.Path,
-				time.Since(v.Start),
-			)
+			fields := []zap.Field{
+				zap.Int("status", v.StatusCode),
+				zap.String("method", r.Method),
+				zap.String("endpoint", r.URL.Path),
+				zap.Duration("duration_ms", time.Since(v.Start)),
+				zap.String("human_readable_duration", fmt.Sprint(time.Since(v.Start))),
+			}
 
-			// Return the error so it can be handled further up the chain.
+			if v.StatusCode < 400 {
+				log.Info("", fields...)
+			} else {
+				log.Error("", fields...)
+			}
+
 			return err
 		}
 

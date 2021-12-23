@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"employee-service/pkg/models"
-	"employee-service/pkg/web"
+	"github.com/ivorscott/employee-service/pkg/models"
+	"github.com/ivorscott/employee-service/pkg/web"
 
 	"net/http"
 	"strconv"

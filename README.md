@@ -8,48 +8,21 @@ Test Go Service
 go run ./cmd/employee
 ```
 
-Two hardcoded users exist. Example:
-```
-curl -v -X GET http://localhost:8080/employees/0 | jq
-
-{
-  "id": 0,
-  "firstName": "Adam",
-  "lastName": "Smith",
-  "job": "Philosopher"
-}
-
-curl -v -X GET http://localhost:8080/employees/1 | jq 
-
-{
-  "id": 1,
-  "firstName": "John",
-  "lastName": "Locke",
-  "job": "Philosopher"
-}
-
-curl -v -X GET http://localhost:8080/employees/2 | jq
-
-{
-  "error": "not found"
-}
-
-curl -v -X GET http://localhost:8080/employees/abc | jq
-
-{
-  "error": "bad request"
-}
-```
-
 # To Do 
+
+[X] add logging w/ elk stack
+
+[ ] add monitoring w/ prometheus and grafana
+
+[ ] add tracing w/ Open telemetry
 
 [ ] add swagger
 
-[ ] add elasticsearch
+[ ] add postgres
+
+[ ] add crud 
 
 [ ] add interfaces
-
-[ ] add postgres
 
 [ ] add fixtures
 
@@ -57,26 +30,4 @@ curl -v -X GET http://localhost:8080/employees/abc | jq
 
 [ ] add goldenfiles
 
-[ ] add kubernetes
-
-[ ] add auth
-
-[ ] add tracing
-
-[ ] add redis
-
-[ ] add nats jetstream
-
-[ ] add prometheus
-
-[ ] add graphana
-
-[ ] add example requests
-
-[ ] add terraform
-
-[ ] add makefile
-
-[ ] add zappr
-
-[ ] add ci workflow
+[ ] add test data
