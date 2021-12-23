@@ -3,7 +3,8 @@ package web
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"strings"
@@ -18,7 +19,7 @@ type Handler func(http.ResponseWriter, *http.Request) error
 
 // App represents a new application.
 type App struct {
-	log      *log.Logger
+	log      *zap.Logger
 	mux      *mux.Router
 	mw       []Middleware
 	shutdown chan os.Signal
@@ -37,7 +38,7 @@ type Values struct {
 }
 
 // NewApp returns a new app equipped with built-in middleware required for every handler.
-func NewApp(shutdown chan os.Signal, logger *log.Logger, mw ...Middleware) *App {
+func NewApp(shutdown chan os.Signal, logger *zap.Logger, mw ...Middleware) *App {
 	return &App{
 		log:      logger,
 		mux:      mux.NewRouter(),
@@ -62,7 +63,7 @@ func (a *App) Handle(methods string, path string, h Handler) {
 
 		// Catch any propagated error
 		if err := h(w, r); err != nil {
-			a.log.Printf("error: unhandled error\n %+v", err)
+			a.log.Error("", zap.Error(fmt.Errorf("error: unhandled error\n %+v", err)))
 			if IsShutdown(err) {
 				a.SignalShutdown()
 			}
