@@ -1,16 +1,17 @@
-# Development Only Settings
-# xpack.security.enabled=false # disables Kibana security warning message
-# ES_JAVA_OPTS=-Xms512m -Xmx512m # restricts heap usage for testing
+# Development Settings (Not for production)
+# xpack.security.enabled=false # hides security warning in kibana dev tools
+# ES_JAVA_OPTS=-Xms512m -Xmx512m # restricts heap usage
 
 version: '2.4'
 services:
-  es01:
+
+  elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
-      - node.name=es01
+      - node.name=elasticsearch
       - cluster.name=es-docker-cluster
       - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      - cluster.initial_master_nodes=elasticsearch,es02,es03
       - bootstrap.memory_lock=true
       - xpack.security.enabled=false # Not for production
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Not for production
@@ -19,17 +20,22 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - data01:/usr/share/elasticsearch/data  
-    ports: 
-      - 9222:9200
+      - data01:/usr/share/elasticsearch/data
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s -f http://localhost:9200/_cat/health || exit 1" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "9200:9200"
 
   es02:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
       - node.name=es02
       - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      - discovery.seed_hosts=elasticsearch,es03
+      - cluster.initial_master_nodes=elasticsearch,es02,es03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Not for production
     ulimits:
@@ -44,11 +50,10 @@ services:
     environment:
       - node.name=es03
       - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
+      - discovery.seed_hosts=elasticsearch,es02
+      - cluster.initial_master_nodes=elasticsearch,es02,es03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Not for production
-
     ulimits:
       memlock:
         soft: -1
@@ -56,17 +61,38 @@ services:
     volumes:
       - data03:/usr/share/elasticsearch/data
 
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.5.1
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./logs/:/logs/
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.11.2
+    volumes:
+      - ./configs/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
   kib01:
       image: docker.elastic.co/kibana/kibana:7.16.1
-      container_name: kib01
-      ports:
-        - 5601:5601
       environment:
-        ELASTICSEARCH_URL: http://es01:9200
-        ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
+        ELASTICSEARCH_URL: http://elasticsearch:9200
+        ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200","http://es02:9200","http://es03:9200"]'
+      healthcheck:
+        test: [ "CMD", "curl", "-s", "-f", "http://localhost:5601/api/status" ]
+        interval: 5s
+        timeout: 3s
+        start_period: 30s
+        retries: 5
+      ports:
+        - "5601:5601"
 
 volumes:
   data01:
   data02:
   data03:
-
