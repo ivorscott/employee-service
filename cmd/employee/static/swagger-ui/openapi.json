@@ -1,0 +1,131 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Employee service",
+    "description" : "Devpie Labs employee service.\n",
+    "contact" : {
+      "name" : "Devpie Labs",
+      "url" : "developers.devpie.io",
+      "email" : "people@devpie.io"
+    },
+    "version" : "0.0.1"
+  },
+  "servers" : [ {
+    "url" : "https://localhost:8080",
+    "description" : "local development"
+  } ],
+  "paths" : {
+    "/employees/{employee_id}" : {
+      "get" : {
+        "tags" : [ "Employees" ],
+        "description" : "Get employee.\n",
+        "operationId" : "employees",
+        "parameters" : [ {
+          "name" : "employee_id",
+          "in" : "path",
+          "description" : "Employee id associated with the request.\n",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Employee successfully received.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "default" : {
+            "description" : "An error response as application/problem+json.",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_default"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Employee" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "description" : "Employee id.",
+            "example" : 1
+          },
+          "first_name" : {
+            "type" : "string",
+            "description" : "Emploee first name.",
+            "example" : "Adam"
+          },
+          "last_name" : {
+            "type" : "string",
+            "description" : "Emploee last name.",
+            "example" : "Smith"
+          },
+          "job" : {
+            "type" : "string",
+            "description" : "Employee job title.",
+            "example" : "Philosopher"
+          }
+        },
+        "description" : "Represents an employee."
+      },
+      "inline_response_default" : {
+        "properties" : {
+          "error" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "EmployeeResponse" : {
+        "description" : "Employee successfully received.",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Employee"
+            }
+          }
+        }
+      },
+      "Error" : {
+        "description" : "An error response as application/problem+json.",
+        "content" : {
+          "application/problem+json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/inline_response_default"
+            }
+          }
+        }
+      }
+    },
+    "parameters" : {
+      "employee_id" : {
+        "name" : "employee_id",
+        "in" : "path",
+        "description" : "Employee id associated with the request.\n",
+        "required" : true,
+        "style" : "simple",
+        "explode" : false,
+        "schema" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}
