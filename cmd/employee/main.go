@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"log"
@@ -19,6 +20,9 @@ import (
 const logPath = "./logs/out.log"
 
 var logger *zap.Logger
+
+//go:embed static
+var content embed.FS
 
 func main() {
 	_, err := os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE, 0666)
@@ -42,7 +46,7 @@ func main() {
 	})
 
 	if err := run(logger); err != nil {
-		log.Fatal(err)
+		logger.Panic("", zap.Error(err))
 	}
 }
 
@@ -55,7 +59,7 @@ func run(logger *zap.Logger) error {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      handlers.API(shutdown, logger),
+		Handler:      handlers.API(shutdown, logger, content),
 	}
 	serverErrors := make(chan error, 1)
 

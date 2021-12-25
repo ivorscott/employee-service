@@ -38,10 +38,11 @@ type Values struct {
 }
 
 // NewApp returns a new app equipped with built-in middleware required for every handler.
-func NewApp(shutdown chan os.Signal, logger *zap.Logger, mw ...Middleware) *App {
+func NewApp(router *mux.Router, shutdown chan os.Signal, logger *zap.Logger, mw ...Middleware) *App {
+
 	return &App{
 		log:      logger,
-		mux:      mux.NewRouter(),
+		mux:      router,
 		mw:       mw,
 		shutdown: shutdown,
 	}
@@ -75,7 +76,6 @@ func (a *App) Handle(methods string, path string, h Handler) {
 
 // ServeHTTP extends original mux ServeHTTP method.
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	a.mux.ServeHTTP(w, r)
 }
 

@@ -12,8 +12,10 @@ func Errors() web.Middleware {
 	// This is the actual middleware function to be executed.
 	f := func(before web.Handler) web.Handler {
 		h := func(w http.ResponseWriter, r *http.Request) error {
+			w.Header().Set("Content-Type", "application/json")
 			// Run the handler chain and catch any propagated error.
 			if err := before(w, r); err != nil {
+
 				// Respond to the error.
 				if err = web.RespondError(r.Context(), w, err); err != nil {
 					return err
