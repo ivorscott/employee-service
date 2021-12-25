@@ -9,6 +9,12 @@ import (
 
 // Respond send a response back to the client.
 func Respond(ctx context.Context, w http.ResponseWriter, val interface{}, statusCode int) error {
+	w.Header().Set("Content-Type", "application/json")
+
+	if statusCode >= 400 {
+		w.Header().Set("Content-Type", "application/problem+json")
+	}
+
 	if v, ok := ctx.Value(KeyValues).(*Values); ok {
 		v.StatusCode = statusCode
 	}
@@ -17,6 +23,7 @@ func Respond(ctx context.Context, w http.ResponseWriter, val interface{}, status
 		w.WriteHeader(statusCode)
 		return nil
 	}
+
 	res, err := json.Marshal(val)
 	if err != nil {
 		return err
@@ -34,6 +41,7 @@ func Respond(ctx context.Context, w http.ResponseWriter, val interface{}, status
 // RespondError sends an error response back to the client.
 func RespondError(ctx context.Context, w http.ResponseWriter, err error) error {
 	var webErr *Error
+
 	if ok := errors.Is(err, webErr); ok {
 		er := ErrorResponse{
 			Error:  webErr.Err.Error(),

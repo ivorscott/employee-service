@@ -15,6 +15,10 @@ type Employee struct{}
 
 // GetEmployee retrieves an employee.
 func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
+	var errMsg struct {
+		Error string `json:"error"`
+	}
+
 	vars := mux.Vars(r)
 	eMap := map[int]models.Employee{
 		0: {
@@ -33,11 +37,13 @@ func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
 
 	id, err := strconv.Atoi(vars["employee-id"])
 	if err != nil {
-		return web.Respond(r.Context(), w, nil, http.StatusBadRequest)
+		errMsg.Error = "bad request"
+		return web.Respond(r.Context(), w, errMsg, http.StatusBadRequest)
 	}
 
 	if employee, ok := eMap[id]; ok {
 		return web.Respond(r.Context(), w, employee, http.StatusOK)
 	}
-	return web.Respond(r.Context(), w, nil, http.StatusNotFound)
+	errMsg.Error = "not found"
+	return web.Respond(r.Context(), w, errMsg, http.StatusNotFound)
 }

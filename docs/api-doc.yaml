@@ -1,1 +1,81 @@
-# TODO
+openapi: 3.0.0
+
+info:
+  title: Employee service
+  description: |
+    Devpie Labs employee service.
+  version: 0.0.1
+  contact:
+    name: Devpie Labs
+    url: developers.devpie.io
+    email: people@devpie.io
+
+servers:
+  - url: https://localhost:8080
+    description: local development
+
+paths:
+  /employees/{employee_id}:
+    get:
+      tags:
+        - "Employees"
+      operationId: employees
+      description: |
+        Get employee.
+      parameters:
+        - $ref: '#/components/parameters/employee_id'
+      responses:
+        200:
+          $ref: "#/components/responses/EmployeeResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+components:
+  parameters:
+    employee_id:
+      in: path
+      name: employee_id
+      required: true
+      description: |
+        Employee id associated with the request.
+      schema:
+        type: string
+
+  responses:
+    EmployeeResponse:
+      description: Employee successfully received.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Employee"
+
+    Error:
+      description: An error response as application/problem+json.
+      content:
+        application/problem+json:
+          schema:
+            properties:
+              error:
+                type: string
+
+  schemas:
+    Employee:
+      type: object
+      description: Represents an employee.
+      properties:
+        id:
+          type: integer
+          description: Employee id.
+          example: 1
+        first_name:
+          type: string
+          description: Emploee first name.
+          example: Adam
+        last_name:
+          type: string
+          description: Emploee last name.
+          example: Smith
+        job:
+          type: string
+          description: Employee job title.
+          example: Philosopher
