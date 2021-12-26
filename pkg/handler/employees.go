@@ -3,6 +3,7 @@ package handler
 
 import (
 	"github.com/ivorscott/employee-service/pkg/model"
+	"github.com/ivorscott/employee-service/pkg/trace"
 	"github.com/ivorscott/employee-service/pkg/web"
 
 	"net/http"
@@ -14,11 +15,16 @@ import (
 // Employee service.
 type Employee struct{}
 
+var errMsg struct {
+	Error string `json:"error"`
+}
+
 // GetEmployee retrieves an employee.
 func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
-	var errMsg struct {
-		Error string `json:"error"`
-	}
+
+	// Create the parent span.
+	ctx, span := trace.NewSpan(r.Context(), "handler.GetEmployee", nil)
+	defer span.End()
 
 	vars := mux.Vars(r)
 	eMap := map[int]model.Employee{
@@ -36,15 +42,19 @@ func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
 		},
 	}
 
+	// Some random informative tags.
+	trace.AddSpanTags(span, map[string]string{"param": vars["employee-id"]})
+
 	id, err := strconv.Atoi(vars["employee-id"])
 	if err != nil {
-		errMsg.Error = "bad request"
-		return web.Respond(r.Context(), w, errMsg, http.StatusBadRequest)
+		trace.AddSpanError(span, err)
+		return web.Respond(ctx, w, nil, http.StatusBadRequest)
 	}
 
 	if employee, ok := eMap[id]; ok {
-		return web.Respond(r.Context(), w, employee, http.StatusOK)
+		return web.Respond(ctx, w, employee, http.StatusOK)
 	}
-	errMsg.Error = "not found"
-	return web.Respond(r.Context(), w, errMsg, http.StatusNotFound)
+
+	trace.AddSpanError(span, err)
+	return web.Respond(ctx, w, nil, http.StatusNotFound)
 }

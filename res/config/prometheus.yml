@@ -11,4 +11,4 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets:
-          - golang:8080
+          - localhost:8080
