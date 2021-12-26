@@ -2,34 +2,31 @@ package middleware
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/ivorscott/employee-service/pkg/web"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 func init() {
 	// register metrics
 	// required in order to expose metrics to the http handler
-	if err := prometheus.Register(totalRequests); err != nil {
+	if err := prometheus.Register(totalRequestsMetric); err != nil {
 		log.Println("totalRequests metric failed")
 	}
-	if err := prometheus.Register(responseStatus); err != nil {
+	if err := prometheus.Register(responseStatusMetric); err != nil {
 		log.Println("responseStatus metric failed")
 	}
-	if err := prometheus.Register(httpDuration); err != nil {
+	if err := prometheus.Register(httpDurationMetric); err != nil {
 		log.Println("httpDuration metric failed")
 	}
 }
 
-// metric 1
-// create new counter metric
-// counter metrics only increment values but can be reset to zero when the application restarts.
-// the current value is not very relevant, values overtime are more significant.
-var totalRequests = prometheus.NewCounterVec(
+var totalRequestsMetric = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "http_requests_total",
 		Help: "Number of get requests.",
@@ -37,8 +34,7 @@ var totalRequests = prometheus.NewCounterVec(
 	[]string{"path"},
 )
 
-// metric 2
-var responseStatus = prometheus.NewCounterVec(
+var responseStatusMetric = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "response_status",
 		Help: "Status of HTTP response",
@@ -46,14 +42,13 @@ var responseStatus = prometheus.NewCounterVec(
 	[]string{"status"},
 )
 
-// metric 3
-var httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+var httpDurationMetric = promauto.NewHistogramVec(prometheus.HistogramOpts{
 	Name: "http_response_time_seconds",
 	Help: "Duration of HTTP requests.",
 }, []string{"path"})
 
-// Metrics middleware implements prometheus metrics.
-func Metrics() web.Middleware {
+// Metric middleware implements prometheus metrics.
+func Metric() web.Middleware {
 	f := func(before web.Handler) web.Handler {
 		h := func(w http.ResponseWriter, r *http.Request) error {
 			v, ok := r.Context().Value(web.KeyValues).(*web.Values)
@@ -67,13 +62,13 @@ func Metrics() web.Middleware {
 			path, _ := route.GetPathTemplate()
 
 			// time request
-			timer := prometheus.NewTimer(httpDuration.WithLabelValues(path))
+			timer := prometheus.NewTimer(httpDurationMetric.WithLabelValues(path))
 
 			statusCode := v.StatusCode
 
 			// increase metric counters using Inc() (i.e., increment)
-			responseStatus.WithLabelValues(strconv.Itoa(statusCode)).Inc()
-			totalRequests.WithLabelValues(path).Inc()
+			responseStatusMetric.WithLabelValues(strconv.Itoa(statusCode)).Inc()
+			totalRequestsMetric.WithLabelValues(path).Inc()
 
 			timer.ObserveDuration()
 
@@ -82,5 +77,4 @@ func Metrics() web.Middleware {
 		return h
 	}
 	return f
-
 }

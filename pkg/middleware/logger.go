@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Logger writes some information about the request to the logs.
+// Logger middleware writes some information about the request to the logs.
 func Logger(log *zap.Logger) web.Middleware {
 	// This is the actual middleware function to be executed.
 	f := func(before web.Handler) web.Handler {
