@@ -44,3 +44,13 @@ go run ./cmd/employee
 [ ] add goldenfiles
 
 [ ] add test data
+
+[ ] auth
+
+[ ] cors
+
+[ ] github workflow
+
+[ ] terraform 
+
+[ ] kubernetes

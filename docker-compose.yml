@@ -92,7 +92,43 @@ services:
       ports:
         - "5601:5601"
 
+# Grafana default credentials
+# username: admin
+# pass: admin
+# Grafana Deprecation Notice was present:
+#   Browser access mode in the Prometheus datasource is deprecated
+#   and will be removed in a future release.
+  grafana:
+    image: grafana/grafana:8.3.3
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+  golang:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: dev
+    restart: always
+    ports:
+      - '8080:8080'
+  prometheus:
+    image: prom/prometheus:v2.24.0
+    volumes:
+      - ./res/config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - 9090:9090
+    restart: always
+
 volumes:
   data01:
   data02:
   data03:
+  grafana_data:
+  prometheus_data:
