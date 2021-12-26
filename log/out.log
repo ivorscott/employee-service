@@ -188,4 +188,16 @@
 {"level":"info","ts":1640380342.757086,"caller":"employee/main.go:63","msg":"Starting server..."}
 {"level":"info","ts":1640380416.861472,"caller":"middleware/logger.go:33","msg":"","status":200,"method":"GET","endpoint":"/employees/1","duration_ms":0.000505542,"human_readable_duration":"505.625µs"}
 {"level":"info","ts":1640380759.068883,"caller":"middleware/logger.go:33","msg":"","status":200,"method":"GET","endpoint":"/employees/1","duration_ms":0.000019583,"human_readable_duration":"19.667µs"}
-{"level":"info","ts":1640380900.194865,"caller":"employee/main.go:63","msg":"Starting server..."}
+{"level":"info","ts":1640380900.194865,"caller":"employee/main.go:63","msg":"Starting server..."}{"level":"info","ts":1640471502.791498,"caller":"employee/main.go:67","msg":"Starting server..."}
+{"level":"info","ts":1640471554.860998,"caller":"employee/main.go:67","msg":"Starting server..."}
+{"level":"info","ts":1640471591.915669,"caller":"employee/main.go:67","msg":"Starting server..."}
+{"level":"info","ts":1640502474.33233,"caller":"employee/main.go:75","msg":"Start shutdown due to \"interrupt\" signal\n"}
+{"level":"info","ts":1640505723.037648,"caller":"employee/main.go:43","msg":"Starting server..."}
+{"level":"info","ts":1640505753.887108,"caller":"employee/main.go:43","msg":"Starting server..."}
+{"level":"info","ts":1640505755.588125,"caller":"employee/main.go:51","msg":"Start shutdown due to \"interrupt\" signal\n"}
+{"level":"info","ts":1640505856.471395,"caller":"employee/main.go:43","msg":"Starting server..."}
+{"level":"info","ts":1640505857.806271,"caller":"employee/main.go:51","msg":"Start shutdown due to \"interrupt\" signal\n"}
+{"level":"info","ts":1640506129.6186109,"caller":"employee/main.go:42","msg":"Starting server..."}
+{"level":"info","ts":1640506130.418664,"caller":"employee/main.go:50","msg":"Start shutdown due to \"interrupt\" signal\n"}
+{"level":"info","ts":1640506174.2010188,"caller":"employee/main.go:42","msg":"Starting server..."}
+{"level":"info","ts":1640506175.97956,"caller":"employee/main.go:50","msg":"Start shutdown due to interrupt signal"}

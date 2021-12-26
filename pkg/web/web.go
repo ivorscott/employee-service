@@ -4,7 +4,6 @@ package web
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 // Handler represents a custom http handler that returns an error.
@@ -38,12 +38,11 @@ type Values struct {
 }
 
 // NewApp returns a new app equipped with built-in middleware required for every handler.
-func NewApp(router *mux.Router, shutdown chan os.Signal, logger *zap.Logger, mw ...Middleware) *App {
-
+func NewApp(router *mux.Router, shutdown chan os.Signal, logger *zap.Logger, middleware ...Middleware) *App {
 	return &App{
 		log:      logger,
 		mux:      router,
-		mw:       mw,
+		mw:       middleware,
 		shutdown: shutdown,
 	}
 }
