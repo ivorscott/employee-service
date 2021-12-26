@@ -1,7 +1,8 @@
-package handlers
+// Package handler contains application handlers
+package handler
 
 import (
-	"github.com/ivorscott/employee-service/pkg/models"
+	"github.com/ivorscott/employee-service/pkg/model"
 	"github.com/ivorscott/employee-service/pkg/web"
 
 	"net/http"
@@ -20,7 +21,7 @@ func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	vars := mux.Vars(r)
-	eMap := map[int]models.Employee{
+	eMap := map[int]model.Employee{
 		0: {
 			ID:        0,
 			FirstName: "Alan",

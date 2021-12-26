@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"github.com/ivorscott/employee-service/pkg/web"
 	"net/http"
+
+	"github.com/ivorscott/employee-service/pkg/web"
 )
 
 // Errors handles errors coming out of the call chain. It detects normal
@@ -15,7 +16,6 @@ func Errors() web.Middleware {
 			w.Header().Set("Content-Type", "application/json")
 			// Run the handler chain and catch any propagated error.
 			if err := before(w, r); err != nil {
-
 				// Respond to the error.
 				if err = web.RespondError(r.Context(), w, err); err != nil {
 					return err

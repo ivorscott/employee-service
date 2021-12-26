@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/ivorscott/employee-service/pkg/web"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	"github.com/ivorscott/employee-service/pkg/web"
+	"go.uber.org/zap"
 )
 
 // Logger writes some information about the request to the logs.
