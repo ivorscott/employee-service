@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ivorscott/employee-service/pkg/trace"
 	"go.uber.org/zap"
 )
 
@@ -48,7 +49,7 @@ func NewApp(router *mux.Router, shutdown chan os.Signal, logger *zap.Logger, mid
 }
 
 // Handle converts our custom handler to the standard library Handler.
-func (a *App) Handle(methods string, path string, h Handler) {
+func (a *App) Handle(methods string, path string, name string, h Handler) {
 	h = wrapMiddleware(a.mw, h)
 
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +71,7 @@ func (a *App) Handle(methods string, path string, h Handler) {
 		}
 	}
 
-	a.mux.NewRoute().Methods(strings.Split(methods, ",")...).Path(path).HandlerFunc(fn)
+	a.mux.NewRoute().Methods(strings.Split(methods, ",")...).Path(path).HandlerFunc(trace.HTTPHandlerFunc(fn, name))
 }
 
 // ServeHTTP extends original mux ServeHTTP method.

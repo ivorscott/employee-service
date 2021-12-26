@@ -104,14 +104,6 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-  golang:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-      target: dev
-    restart: always
-    ports:
-      - '8080:8080'
   prometheus:
     image: prom/prometheus:v2.24.0
     volumes:
@@ -125,6 +117,14 @@ services:
     ports:
       - 9090:9090
     restart: always
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.29
+    environment:
+      JAEGER_DISABLED: true
+    ports:
+      - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
+      - "16686:16686"   # HTTP server (browser UI)
 
 volumes:
   data01:

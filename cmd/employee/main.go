@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ivorscott/employee-service/pkg/trace"
 	"go.uber.org/zap"
 )
 
@@ -26,6 +27,21 @@ func main() {
 }
 
 func run(logger *zap.Logger) error {
+	ctx := context.Background()
+
+	// Bootstrap tracer.
+	prv, err := trace.NewProvider(trace.ProviderConfig{
+		JaegerEndpoint: "http://localhost:14268/api/traces",
+		ServiceName:    "employee-service",
+		ServiceVersion: "1.0.0",
+		Environment:    "dev",
+		Disabled:       false,
+	})
+	if err != nil {
+		logger.Panic("", zap.Error(err))
+	}
+	defer prv.Close(ctx)
+
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
