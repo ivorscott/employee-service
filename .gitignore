@@ -2,3 +2,4 @@
 main
 employee
 .DS_Store
+log/out.log
