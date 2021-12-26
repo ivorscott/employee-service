@@ -2,7 +2,7 @@
 default: develop
 
 generate:
-	swagger-codegen generate -i doc/api-doc.yaml -l openapi -o cmd/employee/static/swagger-ui
+	swagger-codegen generate -i doc/api-doc.yml -l openapi -o cmd/employee/static/swagger-ui
 .PHONY: generate
 
 fmt:
