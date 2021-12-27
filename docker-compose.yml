@@ -92,18 +92,13 @@ services:
       ports:
         - "5601:5601"
 
-# Grafana default credentials
-# username: admin
-# pass: admin
-# Grafana Deprecation Notice was present:
-#   Browser access mode in the Prometheus datasource is deprecated
-#   and will be removed in a future release.
   grafana:
     image: grafana/grafana:8.3.3
     ports:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+
   prometheus:
     image: prom/prometheus:v2.24.0
     volumes:

@@ -2,31 +2,17 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/ivorscott/employee-service/pkg/web"
+
+	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-func init() {
-	// register metrics
-	// required in order to expose metrics to the http handler
-	if err := prometheus.Register(totalRequestsMetric); err != nil {
-		log.Println("totalRequests metric failed")
-	}
-	if err := prometheus.Register(responseStatusMetric); err != nil {
-		log.Println("responseStatus metric failed")
-	}
-	if err := prometheus.Register(httpDurationMetric); err != nil {
-		log.Println("httpDuration metric failed")
-	}
-}
-
-var totalRequestsMetric = prometheus.NewCounterVec(
+var totalRequestsMetric = promauto.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "http_requests_total",
 		Help: "Number of get requests.",
@@ -34,7 +20,7 @@ var totalRequestsMetric = prometheus.NewCounterVec(
 	[]string{"path"},
 )
 
-var responseStatusMetric = prometheus.NewCounterVec(
+var responseStatusMetric = promauto.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "response_status",
 		Help: "Status of HTTP response",
