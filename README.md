@@ -11,15 +11,18 @@ Test Go Service
 ## Usage
 
 ```bash
-make 
-# or 
-go run ./cmd/employee
-
+make # start app
+docker-compose up -d # start containers
 ```
+
+The employee service does not run in a container during local development.
+Docker containers are only leveraged for database and observability services.
 
 # To Do 
 
 [X] add logging w/ elk stack
+
+[X] log retention policy
 
 [X] add swagger
 
