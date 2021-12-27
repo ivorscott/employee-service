@@ -5,21 +5,18 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"github.com/ivorscott/employee-service/pkg/trace"
-	"go.uber.org/zap"
 )
 
 //go:embed static
 var content embed.FS
 
 func main() {
-	logger, Sync := NewLoggerOrFail()
+	logger, Sync := newLoggerOrFail()
 	defer Sync()
 
 	if err := run(logger); err != nil {
@@ -28,30 +25,32 @@ func main() {
 }
 
 func run(logger *zap.Logger) error {
-	ctx := context.Background()
-
-	// Bootstrap tracer.
-	prv, err := trace.NewProvider(trace.ProviderConfig{
-		JaegerEndpoint: "http://localhost:14268/api/traces",
-		ServiceName:    "employee-service",
-		ServiceVersion: "1.0.0",
-		Environment:    "dev",
-		Disabled:       false,
-	})
+	cfg, err := newAppConfig()
 	if err != nil {
-		logger.Panic("", zap.Error(err))
+		return err
 	}
-	defer prv.Close(ctx)
+
+	repo, rClose, err := newRepository(cfg)
+	if err != nil {
+		return err
+	}
+	defer rClose()
+
+	ctx := context.Background()
+	_, tClose, err := newTracer()
+	if err != nil {
+		return err
+	}
+	defer tClose(ctx)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
 	srv := &http.Server{
 		Addr:         "0.0.0.0:8080",
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
-		Handler:      API(shutdown, logger, content),
+		WriteTimeout: cfg.Web.WriteTimeout,
+		ReadTimeout:  cfg.Web.ReadTimeout,
+		Handler:      API(shutdown, logger, content, repo),
 	}
 	serverErrors := make(chan error, 1)
 
@@ -67,7 +66,7 @@ func run(logger *zap.Logger) error {
 		logger.Info(fmt.Sprintf("Start shutdown due to %s signal", sig))
 
 		// give on going tasks a deadline for completion
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
 		defer cancel()
 
 		err := srv.Shutdown(ctx)

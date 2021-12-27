@@ -4,7 +4,6 @@
 
 version: '2.4'
 services:
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
