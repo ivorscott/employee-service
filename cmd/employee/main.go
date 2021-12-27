@@ -19,7 +19,8 @@ import (
 var content embed.FS
 
 func main() {
-	logger := NewLoggerOrFail()
+	logger, Sync := NewLoggerOrFail()
+	defer Sync()
 
 	if err := run(logger); err != nil {
 		logger.Panic("", zap.Error(err))

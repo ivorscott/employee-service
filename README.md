@@ -27,9 +27,9 @@ go run ./cmd/employee
 
 [X] add golangci-lint
 
-[ ] add monitoring w/ prometheus and grafana
+[X] add monitoring w/ prometheus and grafana
 
-[ ] add tracing w/ Open telemetry
+[X] add tracing w/ Open telemetry
 
 [ ] add postgres
 

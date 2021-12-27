@@ -15,13 +15,8 @@ import (
 // Employee service.
 type Employee struct{}
 
-var errMsg struct {
-	Error string `json:"error"`
-}
-
 // GetEmployee retrieves an employee.
 func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
-
 	// Create the parent span.
 	ctx, span := trace.NewSpan(r.Context(), "handler.GetEmployee", nil)
 	defer span.End()
