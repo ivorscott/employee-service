@@ -5,18 +5,19 @@ import (
 	"database/sql"
 	"fmt"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/ivorscott/employee-service/pkg/db"
 	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/res/database"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 // EmployeeRepository is responsible for storing and retrieving employees.
 type EmployeeRepository struct {
-	repo *database.Repository
+	repo *db.Repository
 }
 
 // NewEmployeeRepository creates a new EmployeeRepository.
-func NewEmployeeRepository(repo *database.Repository) *EmployeeRepository {
+func NewEmployeeRepository(repo *db.Repository) *EmployeeRepository {
 	return &EmployeeRepository{
 		repo: repo,
 	}

@@ -1,0 +1,37 @@
+- employee_id: bc4cd1a1-4f0e-4e39-9960-e6b1cfe388db
+  auth0_id: auth0|619517c51b1a2e00690365af
+  email_address: ivor@devpie.io
+  first_name: Ivor
+  middle_name: Scott
+  last_name: Cummings
+  phone_number: 9083971266
+  birth_date: 1989-11-01
+  hire_date: 2018-09-01
+  picture: "example.com/image/a2s345g23d"
+  language: english
+  country: united states of america
+  city: Basking Ridge
+  zipcode: 07920
+  salary: 160,000
+  position: Senior Software Engineer
+  created_at: 2018-09-01 23:59:59
+  updated_at: RAW=NOW()
+
+- employee_id: 35d27bb4-c39e-4c10-9a64-aabc2490ec4d
+  auth0_id: auth0|61cb8be92bb93500699c27c4
+  email_address: people@devpie.io
+  first_name: Pe
+  middle_name:
+  last_name: Ople
+  phone_number: 15144558913
+  birth_date: 1984-2-01
+  hire_date: 2020-04-01
+  picture: "example.com/image/b34c58g92h"
+  language: german
+  country: germany
+  city: Berlin
+  zipcode: 12049
+  salary: 67,000
+  position: Software Engineer
+  created_at: 2020-04-01 23:59:59
+  updated_at: RAW=NOW()

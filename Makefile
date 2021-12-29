@@ -1,6 +1,7 @@
 include .env
 
 DB_URL=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=$(POSTGRES_SSL)
+#DB_URL=postgres://$(TEST_POSTGRES_USER):$(TEST_POSTGRES_PASSWORD)@$(TEST_POSTGRES_HOST):$(TEST_POSTGRES_PORT)/$(TEST_POSTGRES_DB)?sslmode=$(TEST_POSTGRES_SSL)
 
 default: develop
 
@@ -81,36 +82,37 @@ endef
 
 CHECKMARK="\xE2\x9C\x94"
 BAD_INPUT="you supplied an incorrect argument"
+MIGRATIONS_PATH="./res/migrations"
 
 migration:
     ifndef name
 		$(error ${err_create_migration}))
     endif
 
-	@migrate create -ext sql -dir ./res/migration -seq $(name) \
+	@migrate create -ext sql -dir ./res/migrations -seq $(name) \
 	&& echo $(CHECKMARK) Successfully created migrations!
 .PHONY: migration
 
 version:
-	@migrate -path ./res/migration -database $(DB_URL) version \
+	@migrate -path $(MIGRATIONS_PATH) -database $(DB_URL) version \
 	&& echo $(CHECKMARK) "Here's the current version!" \
 	|| echo Did you reach the bottom? You might not be on an active version.
 .PHONY: version
 
 up:
-	@migrate -path ./res/migration -verbose -database $(DB_URL) up $(num) \
+	@migrate -path $(MIGRATIONS_PATH) -verbose -database $(DB_URL) up $(num) \
 	&& echo $(CHECKMARK) Successfully migrated! \
 	|| echo There might not be any up migrations left or $(BAD_INPUT).
 .PHONY: up
 
 down:
-	@migrate -path ./res/migration -verbose -database $(DB_URL) down $(num) \
+	@migrate -path $(MIGRATIONS_PATH) -verbose -database $(DB_URL) down $(num) \
 	&& echo $(CHECKMARK) Successfully downgraded! \
 	|| echo There might not be any down migrations left or $(BAD_INPUT).
 .PHONY: down
 
 downfall:
-	@migrate -path ./res/migration -verbose -database $(DB_URL) down -all \
+	@migrate -path $(MIGRATIONS_PATH) -verbose -database $(DB_URL) down -all \
 	&& echo $(CHECKMARK) Successfully applied all down migrations! \
 	|| echo Use the force Luke.
 .PHONY: downfall
@@ -121,7 +123,7 @@ force:
 		$(error ${err_force_migration}))
     endif
 
-	@migrate -path ./res/migration -verbose -database $(DB_URL) force $(num) \
+	@migrate -path $(MIGRATIONS_PATH) -verbose -database $(DB_URL) force $(num) \
 	&& echo $(CHECKMARK) Successfully forced migration to version $(num)!
 .PHONY: force
 

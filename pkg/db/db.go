@@ -1,41 +1,33 @@
-// Package database implements the application database connection.
-package database
+// Package db maintains the database connection and extensions.
+package db
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 	"net/url"
-	"os"
 
-	"github.com/pkg/errors"
+	"github.com/ivorscott/employee-service/pkg/config"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // The database driver in use.
+	"github.com/pkg/errors"
 )
-
-// Config is the required properties to use the database.
-type Config struct {
-	User       string
-	Password   string
-	Host       string
-	Name       string
-	DisableTLS bool
-}
 
 // Repository represents the database and query builder methods.
 type Repository struct {
 	SqlxStorer
 	SquirrelBuilder
 	URL url.URL
+	DB  *sql.DB
 }
 
 // NewRepository creates a new repository, connecting it to the postgres server.
-func NewRepository(cfg Config) (*Repository, func(), error) {
+func NewRepository(cfg *config.AppConfig) (*Repository, func() error, error) {
 	// Define SSL mode.
 	sslMode := "require"
-	if cfg.DisableTLS {
+	if cfg.DB.DisableTLS {
 		sslMode = "disable"
 	}
 
@@ -47,9 +39,9 @@ func NewRepository(cfg Config) (*Repository, func(), error) {
 	// Construct url.
 	u := url.URL{
 		Scheme:   "postgres",
-		User:     url.UserPassword(cfg.User, cfg.Password),
-		Host:     cfg.Host,
-		Path:     cfg.Name,
+		User:     url.UserPassword(cfg.DB.User, cfg.DB.Password),
+		Host:     fmt.Sprintf("%s:%d", cfg.DB.Host, cfg.DB.Port),
+		Path:     cfg.DB.Name,
 		RawQuery: q.Encode(),
 	}
 
@@ -59,21 +51,13 @@ func NewRepository(cfg Config) (*Repository, func(), error) {
 	}
 
 	r := &Repository{
+		DB:              db.DB,
 		SqlxStorer:      db,
 		SquirrelBuilder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).RunWith(db),
 		URL:             u,
 	}
 
-	return r, r.CloseFunc, nil
-}
-
-// CloseFunc proxies the internal close method and handles the error.
-func (d *Repository) CloseFunc() {
-	err := d.SqlxStorer.Close()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	return r, db.Close, nil
 }
 
 // StatusCheck returns nil if it can successfully talk to the database. It
