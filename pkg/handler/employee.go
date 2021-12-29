@@ -2,54 +2,57 @@
 package handler
 
 import (
+	"context"
+	"errors"
+	"net/http"
+
 	"github.com/ivorscott/employee-service/pkg/model"
+	"github.com/ivorscott/employee-service/pkg/repository"
 	"github.com/ivorscott/employee-service/pkg/trace"
 	"github.com/ivorscott/employee-service/pkg/web"
 
-	"net/http"
-	"strconv"
-
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
-// Employee service.
-type Employee struct{}
+type employeeService interface {
+	GetEmployeeByID(ctx context.Context, id string) (model.Employee, error)
+}
+
+// EmployeeHandler provides method handlers for employee selection.
+type EmployeeHandler struct {
+	logger  *zap.Logger
+	service employeeService
+}
+
+// NewEmployeeHandler creates a new employee handler.
+func NewEmployeeHandler(logger *zap.Logger, service employeeService) *EmployeeHandler {
+	return &EmployeeHandler{
+		logger:  logger,
+		service: service,
+	}
+}
 
 // GetEmployee retrieves an employee.
-func (e Employee) GetEmployee(w http.ResponseWriter, r *http.Request) error {
-	// Create the parent span.
+func (eh *EmployeeHandler) GetEmployee(w http.ResponseWriter, r *http.Request) error {
 	ctx, span := trace.NewSpan(r.Context(), "handler.GetEmployee", nil)
 	defer span.End()
 
 	vars := mux.Vars(r)
-	eMap := map[int]model.Employee{
-		0: {
-			ID:        0,
-			FirstName: "Alan",
-			LastName:  "Watts",
-			Job:       "Philosopher",
-		},
-		1: {
-			ID:        1,
-			FirstName: "John",
-			LastName:  "Locke",
-			Job:       "Philosopher",
-		},
-	}
-
-	// Some random informative tags.
-	trace.AddSpanTags(span, map[string]string{"param": vars["employee-id"]})
-
-	id, err := strconv.Atoi(vars["employee-id"])
+	e, err := eh.service.GetEmployeeByID(ctx, vars["employee-id"])
 	if err != nil {
-		trace.AddSpanError(span, err)
-		return web.Respond(ctx, w, nil, http.StatusBadRequest)
+		switch {
+		case errors.Is(err, repository.ErrInvalidID):
+			trace.AddSpanError(span, err)
+			return web.NewRequestError(err, http.StatusBadRequest)
+		case errors.Is(err, repository.ErrNotFound):
+			trace.AddSpanError(span, err)
+			return web.NewRequestError(err, http.StatusNotFound)
+		default:
+			trace.AddSpanError(span, err)
+			return err
+		}
 	}
 
-	if employee, ok := eMap[id]; ok {
-		return web.Respond(ctx, w, employee, http.StatusOK)
-	}
-
-	trace.AddSpanError(span, err)
-	return web.Respond(ctx, w, nil, http.StatusNotFound)
+	return web.Respond(ctx, w, e, http.StatusOK)
 }

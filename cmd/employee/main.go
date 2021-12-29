@@ -5,52 +5,61 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/ivorscott/employee-service/pkg/repository"
+	"github.com/ivorscott/employee-service/pkg/service"
+	"github.com/ivorscott/employee-service/res/database"
+
+	"go.uber.org/zap"
 )
 
 //go:embed static
 var content embed.FS
 
 func main() {
-	logger, Sync := newLoggerOrFail()
+	logger, Sync := newLoggerOrPanic()
 	defer Sync()
 
-	if err := run(logger); err != nil {
-		logger.Panic("", zap.Error(err))
-	}
-}
-
-func run(logger *zap.Logger) error {
 	cfg, err := newAppConfig()
 	if err != nil {
-		return err
+		logger.Fatal("", zap.Error(err))
 	}
 
-	repo, rClose, err := newRepository(cfg)
+	repo, rClose, err := newDBConnection(cfg)
 	if err != nil {
-		return err
+		logger.Fatal("", zap.Error(err))
 	}
 	defer rClose()
 
 	ctx := context.Background()
-	_, tClose, err := newTracer()
+	tClose, err := newTraceProviderGlobal()
 	if err != nil {
-		return err
+		logger.Fatal("", zap.Error(err))
 	}
 	defer tClose(ctx)
 
+	if err := run(logger, repo, cfg); err != nil {
+		logger.Panic("", zap.Error(err))
+	}
+}
+
+func run(logger *zap.Logger, repo *database.Repository, cfg appConfig) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	employeeRepository := repository.NewEmployeeRepository(repo)
+
+	employeeService := service.NewEmployeeService(logger, employeeRepository)
 
 	srv := &http.Server{
 		Addr:         "0.0.0.0:8080",
 		WriteTimeout: cfg.Web.WriteTimeout,
 		ReadTimeout:  cfg.Web.ReadTimeout,
-		Handler:      API(shutdown, logger, content, repo),
+		Handler:      API(shutdown, logger, content, employeeService),
 	}
 	serverErrors := make(chan error, 1)
 

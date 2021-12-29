@@ -1,6 +1,8 @@
 package web
 
-import "errors"
+import (
+	"errors"
+)
 
 // Error adds web information to request error.
 type Error struct {

@@ -1,3 +1,4 @@
+// Package database implements the application database connection.
 package database
 
 import (
@@ -23,14 +24,14 @@ type Config struct {
 	DisableTLS bool
 }
 
-// Repository represents the database and query builder methods
+// Repository represents the database and query builder methods.
 type Repository struct {
 	SqlxStorer
 	SquirrelBuilder
 	URL url.URL
 }
 
-// NewRepository creates a new repository, connecting it to the postgres server
+// NewRepository creates a new repository, connecting it to the postgres server.
 func NewRepository(cfg Config) (*Repository, func(), error) {
 	// Define SSL mode.
 	sslMode := "require"
@@ -66,7 +67,7 @@ func NewRepository(cfg Config) (*Repository, func(), error) {
 	return r, r.CloseFunc, nil
 }
 
-// CloseFunc proxies the internal close method and handles the error
+// CloseFunc proxies the internal close method and handles the error.
 func (d *Repository) CloseFunc() {
 	err := d.SqlxStorer.Close()
 	if err != nil {
@@ -87,13 +88,13 @@ func StatusCheck(ctx context.Context, db Storer) error {
 	return db.QueryRowxContext(ctx, q).Scan(&tmp)
 }
 
-// Storer represents a repository
+// Storer represents a repository.
 type Storer interface {
 	SqlxStorer
 	SquirrelBuilder
 }
 
-// SquirrelBuilder represents the fluent sql generation query builder
+// SquirrelBuilder represents the fluent sql generation query builder.
 type SquirrelBuilder interface {
 	Select(columns ...string) squirrel.SelectBuilder
 	Insert(into string) squirrel.InsertBuilder
@@ -104,7 +105,7 @@ type SquirrelBuilder interface {
 	RunWith(runner squirrel.BaseRunner) squirrel.StatementBuilderType
 }
 
-// SqlxStorer represents the database extension sqlx
+// SqlxStorer represents the database extension sqlx.
 type SqlxStorer interface {
 	DriverName() string
 	MapperFunc(mf func(string) string)
