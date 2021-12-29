@@ -1,3 +1,4 @@
+// Package migration contains application migration logic.
 package migration
 
 import (
@@ -8,17 +9,13 @@ import (
 	"runtime"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "github.com/lib/pq"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // required for golang-migrate
+	_ "github.com/golang-migrate/migrate/v4/source/file"       // required for golang-migrate
+	_ "github.com/lib/pq"                                      // The database driver in use.
 )
 
 var (
-	ErrNoChange = errors.New("no change")
-	//ErrNilVersion     = errors.New("no migration")
-	//ErrInvalidVersion = errors.New("version must be >= -1")
-	//ErrLocked         = errors.New("database locked")
-	//ErrLockTimeout    = errors.New("timeout: can't acquire database lock")
+	errNoChange = errors.New("no change")
 )
 
 var (
@@ -26,6 +23,7 @@ var (
 	basePath   = filepath.Dir(b)
 )
 
+// Migrate applies the latest database migration.
 func Migrate(dbname string, url string) error {
 	src := fmt.Sprintf("file://%s", basePath)
 	m, err := migrate.New(src, url)
@@ -33,7 +31,7 @@ func Migrate(dbname string, url string) error {
 		log.Fatal(err)
 	}
 
-	if err := m.Up(); err != nil && err != ErrNoChange {
+	if err := m.Up(); err != nil && err != errNoChange {
 		log.Fatal(err)
 	}
 	return nil
