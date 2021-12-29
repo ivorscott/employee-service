@@ -1,6 +1,7 @@
 .idea
 main
-employee
+/employee
 .DS_Store
 log/*
 !log/.gitkeep
+.env

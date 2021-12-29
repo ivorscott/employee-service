@@ -9,9 +9,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/ivorscott/employee-service/pkg/trace"
+	"github.com/ivorscott/employee-service/pkg/repository"
+	"github.com/ivorscott/employee-service/pkg/service"
+	"github.com/ivorscott/employee-service/res/database"
+
 	"go.uber.org/zap"
 )
 
@@ -19,39 +21,45 @@ import (
 var content embed.FS
 
 func main() {
-	logger, Sync := NewLoggerOrFail()
+	logger, Sync := newLoggerOrPanic()
 	defer Sync()
 
-	if err := run(logger); err != nil {
+	cfg, err := newAppConfig()
+	if err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
+
+	repo, rClose, err := newDBConnection(cfg)
+	if err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
+	defer rClose()
+
+	ctx := context.Background()
+	tClose, err := newTraceProviderGlobal()
+	if err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
+	defer tClose(ctx)
+
+	if err := run(logger, repo, cfg); err != nil {
 		logger.Panic("", zap.Error(err))
 	}
 }
 
-func run(logger *zap.Logger) error {
-	ctx := context.Background()
-
-	// Bootstrap tracer.
-	prv, err := trace.NewProvider(trace.ProviderConfig{
-		JaegerEndpoint: "http://localhost:14268/api/traces",
-		ServiceName:    "employee-service",
-		ServiceVersion: "1.0.0",
-		Environment:    "dev",
-		Disabled:       false,
-	})
-	if err != nil {
-		logger.Panic("", zap.Error(err))
-	}
-	defer prv.Close(ctx)
-
+func run(logger *zap.Logger, repo *database.Repository, cfg appConfig) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
+	employeeRepository := repository.NewEmployeeRepository(repo)
+
+	employeeService := service.NewEmployeeService(logger, employeeRepository)
+
 	srv := &http.Server{
 		Addr:         "0.0.0.0:8080",
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
-		Handler:      API(shutdown, logger, content),
+		WriteTimeout: cfg.Web.WriteTimeout,
+		ReadTimeout:  cfg.Web.ReadTimeout,
+		Handler:      API(shutdown, logger, content, employeeService),
 	}
 	serverErrors := make(chan error, 1)
 
@@ -67,7 +75,7 @@ func run(logger *zap.Logger) error {
 		logger.Info(fmt.Sprintf("Start shutdown due to %s signal", sig))
 
 		// give on going tasks a deadline for completion
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
 		defer cancel()
 
 		err := srv.Shutdown(ctx)

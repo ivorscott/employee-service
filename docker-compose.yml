@@ -4,6 +4,20 @@
 
 version: '2.4'
 services:
+  employee:
+    image: postgres:13.5
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      start_period: 30s
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - employee_data:/var/lib/postgresql/data
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
@@ -20,7 +34,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - data01:/usr/share/elasticsearch/data
+      - elasticsearch_data_1:/usr/share/elasticsearch/data
     healthcheck:
       test: [ "CMD-SHELL", "curl -s -f http://localhost:9200/_cat/health || exit 1" ]
       interval: 3s
@@ -43,7 +57,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - data02:/usr/share/elasticsearch/data
+      - elasticsearch_data_2:/usr/share/elasticsearch/data
 
   es03:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
@@ -59,7 +73,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - data03:/usr/share/elasticsearch/data
+      - elasticsearch_data_3:/usr/share/elasticsearch/data
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:6.5.1
@@ -122,8 +136,9 @@ services:
       - "16686:16686"   # HTTP server (browser UI)
 
 volumes:
-  data01:
-  data02:
-  data03:
   grafana_data:
+  employee_data:
   prometheus_data:
+  elasticsearch_data_1:
+  elasticsearch_data_2:
+  elasticsearch_data_3:
