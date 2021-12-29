@@ -15,6 +15,8 @@ __Optional__
 
 ## Usage
 
+Clone `.env.sample` and rename it `.env`.
+
 ```bash
 make # start app
 docker-compose up -d # start containers
@@ -22,6 +24,17 @@ docker-compose up -d # start containers
 
 ## Migration and Seeding
 
+The service won't have any data until you seed its database.
+
+```bash
+make seed <filepath> # apply seed from ./res/seed
+```
+### Seed Versioning
+We map seed files to specific migration versions. [Learn more](./res/seed/README.md).
+
+### Migration Commands
+
+golang-migrate is used internally upon service start, in repository tests, and through makefile helper commands. 
 ```bash
 
 make migration <name> # create migration
@@ -40,17 +53,15 @@ make downfall # apply all down migrations
 
 make force <version> # force a version https://bit.ly/3exuENS
 
-make seed <filepath> # seed database
 ```
-### Seed Versioning
-We map seed files to specific migration versions. [Learn more](./res/seed/README.md).
+
 ## Entering Database
 
 ```bash
 make db # enter postgres database 
 ```
 
-The employee service does not run in a container during local development.
+The service does not run in a container during local development.
 Containers are only used for databases and observability services.
 
 # To Do 
@@ -75,7 +86,7 @@ Containers are only used for databases and observability services.
 
 [X] add interfaces
 
-[ ] add fixtures
+[X] add fixtures
 
 [ ] add tests
 

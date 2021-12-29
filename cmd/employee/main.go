@@ -15,6 +15,7 @@ import (
 	"github.com/ivorscott/employee-service/pkg/repository"
 	"github.com/ivorscott/employee-service/pkg/service"
 	"github.com/ivorscott/employee-service/pkg/trace"
+	"github.com/ivorscott/employee-service/res"
 
 	"go.uber.org/zap"
 )
@@ -36,6 +37,10 @@ func main() {
 		logger.Fatal("", zap.Error(err))
 	}
 	defer Close()
+
+	if err = res.MigrateUp(repo.URL.String()); err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
 
 	ctx := context.Background()
 	prv, err := trace.NewProvider(trace.ProviderConfig{

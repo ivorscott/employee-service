@@ -35,7 +35,7 @@ func NewEmployeeHandler(logger *zap.Logger, service employeeService) *EmployeeHa
 
 // GetEmployee retrieves an employee.
 func (eh *EmployeeHandler) GetEmployee(w http.ResponseWriter, r *http.Request) error {
-	ctx, span := trace.NewSpan(r.Context(), "handler.GetEmployee", nil)
+	ctx, span := trace.NewSpan(r.Context(), "handler.employee.GetEmployee", nil)
 	defer span.End()
 
 	vars := mux.Vars(r)

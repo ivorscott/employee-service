@@ -5,6 +5,7 @@ import (
 
 	"github.com/ivorscott/employee-service/pkg/model"
 	"github.com/ivorscott/employee-service/pkg/repository"
+	"github.com/ivorscott/employee-service/pkg/trace"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -26,6 +27,9 @@ func NewEmployeeService(logger *zap.Logger, employeeRepo employeeRepository) *Em
 
 // GetEmployeeByID find an employee by id.
 func (es *EmployeeService) GetEmployeeByID(ctx context.Context, id string) (model.Employee, error) {
+	ctx, span := trace.NewSpan(ctx, "service.employee.GetEmployeeByID", nil)
+	defer span.End()
+
 	if _, err := uuid.Parse(id); err != nil {
 		return model.Employee{}, repository.ErrInvalidID
 	}

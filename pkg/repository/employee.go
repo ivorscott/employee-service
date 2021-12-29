@@ -7,6 +7,7 @@ import (
 
 	"github.com/ivorscott/employee-service/pkg/db"
 	"github.com/ivorscott/employee-service/pkg/model"
+	"github.com/ivorscott/employee-service/pkg/trace"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -25,6 +26,9 @@ func NewEmployeeRepository(repo *db.Repository) *EmployeeRepository {
 
 // FindEmployeeByID finds an employee record by id.
 func (er *EmployeeRepository) FindEmployeeByID(ctx context.Context, id string) (model.Employee, error) {
+	_, span := trace.NewSpan(ctx, "repository.employee.FindEmployeeByID", nil)
+	defer span.End()
+
 	var e model.Employee
 
 	stmt := er.repo.Select(

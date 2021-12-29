@@ -46,14 +46,16 @@ func RespondError(ctx context.Context, w http.ResponseWriter, err error) error {
 
 	var webErr *Error
 
-	if ok := errors.Is(err, webErr); ok {
-		var event = make(map[string]string)
+	if errors.As(err, &webErr) {
+		trace.AddSpanError(span, webErr)
 
-		for _, v := range webErr.Fields {
-			event[v.Field] = v.Error
+		if len(webErr.Fields) > 0 {
+			var event = make(map[string]string)
+			for _, v := range webErr.Fields {
+				event[v.Field] = v.Error
+			}
+			trace.AddSpanEvents(span, "field_errors", event)
 		}
-		trace.AddSpanEvents(span, "errors", event)
-		trace.AddSpanError(span, err)
 
 		er := ErrorResponse{
 			Error:  webErr.Err.Error(),
@@ -68,6 +70,7 @@ func RespondError(ctx context.Context, w http.ResponseWriter, err error) error {
 	}
 
 	trace.AddSpanError(span, err)
-	trace.FailSpan(span, "internal error")
+	trace.FailSpan(span, er.Error)
+
 	return Respond(ctx, w, er, http.StatusInternalServerError)
 }

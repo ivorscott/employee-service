@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/ivorscott/employee-service/pkg/web"
@@ -30,10 +31,10 @@ func Logger(log *zap.Logger) web.Middleware {
 				zap.String("human_readable_duration", fmt.Sprint(time.Since(v.Start))),
 			}
 
-			if v.StatusCode < 400 {
+			if v.StatusCode < 500 {
 				log.Info("", fields...)
 			} else {
-				log.Error("", fields...)
+				log.Error("", append(fields, zap.ByteString("stack", debug.Stack()))...)
 			}
 
 			return err
