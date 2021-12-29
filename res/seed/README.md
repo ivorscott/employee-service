@@ -1,41 +1,50 @@
 # Seed Versioning
 
+Databases change. For ease of use, we version seed files as our databases change.
 
-Data seeding is the process of populating a database with an initial set of data.
-This folder contains seed files. __Seeding is for development__ environments.
+## How it works
 
-## Naming convention
+We map seed files to specific migration versions and seed files don't depend on each other. 
 
-Databases change. We leave seeding out of migrations because migration files
-will be used in production environments. In order to prevent seed files from becoming a burden
-as databases change, we associate new seed files to specific migration versions.
+Each seed file MUST:
 
-For example, seed files prefixed `000001` indicate they are designed to work with migration `version 1`:
+1) EMPTY all available tables
+2) SEED all available tables.
+3) MAP to a migration
 
-```bash
-# Seed files
+This approach may create duplicate content overtime, but it removes dependencies. 
+Seed file names are prefixed with the migration version they map to. __Some migrations won't need a seed file__.
 
-000001_seed_employees_table.down.sql
-000001_seed_employees_table.up.sql
-```
-
+For example,
 ```bash
 # Migration files
 
 000001_add_employees_table.down.sql
 000001_add_employees_table.up.sql
 ```
-
-Before applying a seed file, ensure you are on the correct migration 
-version to guarantee it works. 
-
-``` 
-make version
-```
+The corresponding seed file name would be: `000001_seed.sql`. All seed files MUST be placed under `res/seed/`.
 
 Apply the seed.
 
+```bash
+make version # check your version
+make seed ./res/seed/000001_seed.sql
 ```
-make seed ./res/dataseed/000001_seed_employees_table.up.sql
+
+### Not all migrations will need a seed file
+
+You may have more migrations than seed files because not all migrations require new seed data. 
+
+For example,
+```bash
+1_migration 
+2_migration
+3_migration
+4_migration
+
+1_seed 
+4_seed
 ```
+
+__If a seed file exists for your current migration apply it.__
 
