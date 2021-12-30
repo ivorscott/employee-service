@@ -10,9 +10,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/ivorscott/employee-service/pkg/config"
+	"github.com/ivorscott/employee-service/pkg/db"
 	"github.com/ivorscott/employee-service/pkg/repository"
 	"github.com/ivorscott/employee-service/pkg/service"
-	"github.com/ivorscott/employee-service/res/database"
+	"github.com/ivorscott/employee-service/pkg/trace"
+	"github.com/ivorscott/employee-service/res"
 
 	"go.uber.org/zap"
 )
@@ -24,30 +27,40 @@ func main() {
 	logger, Sync := newLoggerOrPanic()
 	defer Sync()
 
-	cfg, err := newAppConfig()
+	cfg, err := config.NewAppConfig()
 	if err != nil {
 		logger.Fatal("", zap.Error(err))
 	}
 
-	repo, rClose, err := newDBConnection(cfg)
+	repo, Close, err := db.NewRepository(cfg)
 	if err != nil {
 		logger.Fatal("", zap.Error(err))
 	}
-	defer rClose()
+	defer Close()
+
+	if err = res.MigrateUp(repo.URL.String()); err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
 
 	ctx := context.Background()
-	tClose, err := newTraceProviderGlobal()
+	prv, err := trace.NewProvider(trace.ProviderConfig{
+		JaegerEndpoint: "http://localhost:14268/api/traces",
+		ServiceName:    "employee-service",
+		ServiceVersion: "1.0.0",
+		Environment:    "dev",
+		Disabled:       false,
+	})
 	if err != nil {
 		logger.Fatal("", zap.Error(err))
 	}
-	defer tClose(ctx)
+	defer prv.Close(ctx)
 
 	if err := run(logger, repo, cfg); err != nil {
 		logger.Panic("", zap.Error(err))
 	}
 }
 
-func run(logger *zap.Logger, repo *database.Repository, cfg appConfig) error {
+func run(logger *zap.Logger, repo *db.Repository, cfg *config.AppConfig) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 

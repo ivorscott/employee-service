@@ -1,4 +1,4 @@
-// Package repository contains all application repositories.
+// Package repository contains all repository logic.
 package repository
 
 import "errors"

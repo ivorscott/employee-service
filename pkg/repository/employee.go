@@ -5,18 +5,20 @@ import (
 	"database/sql"
 	"fmt"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/ivorscott/employee-service/pkg/db"
 	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/res/database"
+	"github.com/ivorscott/employee-service/pkg/trace"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 // EmployeeRepository is responsible for storing and retrieving employees.
 type EmployeeRepository struct {
-	repo *database.Repository
+	repo *db.Repository
 }
 
 // NewEmployeeRepository creates a new EmployeeRepository.
-func NewEmployeeRepository(repo *database.Repository) *EmployeeRepository {
+func NewEmployeeRepository(repo *db.Repository) *EmployeeRepository {
 	return &EmployeeRepository{
 		repo: repo,
 	}
@@ -24,9 +26,12 @@ func NewEmployeeRepository(repo *database.Repository) *EmployeeRepository {
 
 // FindEmployeeByID finds an employee record by id.
 func (er *EmployeeRepository) FindEmployeeByID(ctx context.Context, id string) (model.Employee, error) {
+	ctx, span := trace.NewSpan(ctx, "repository.employee.FindEmployeeByID", nil)
+	defer span.End()
+
 	var e model.Employee
 
-	stmt := er.repo.Select(
+	stmt := er.repo.SQ.Select(
 		"employee_id",
 		"auth0_id",
 		"email_address",
@@ -58,7 +63,7 @@ func (er *EmployeeRepository) FindEmployeeByID(ctx context.Context, id string) (
 		return e, fmt.Errorf("%w: arguments (%v)", err, args)
 	}
 
-	if err := er.repo.Get(&e, query, id); err != nil {
+	if err := er.repo.GetContext(ctx, &e, query, id); err != nil {
 		if err == sql.ErrNoRows {
 			return e, ErrNotFound
 		}
