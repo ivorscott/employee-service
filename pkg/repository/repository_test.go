@@ -1,3 +1,4 @@
+//go:generate mockery -all -dir . -case snake -output ../mocks
 package repository_test
 
 import (

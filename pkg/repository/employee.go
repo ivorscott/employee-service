@@ -31,7 +31,7 @@ func (er *EmployeeRepository) FindEmployeeByID(ctx context.Context, id string) (
 
 	var e model.Employee
 
-	stmt := er.repo.Select(
+	stmt := er.repo.SQ.Select(
 		"employee_id",
 		"auth0_id",
 		"email_address",

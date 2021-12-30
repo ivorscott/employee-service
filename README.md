@@ -91,17 +91,3 @@ Containers are only used for databases and observability services.
 [ ] add tests
 
 [X] add goldenfiles
-
-[ ] add crud
-
-[ ] add test data
-
-[ ] auth
-
-[ ] cors
-
-[ ] github workflow
-
-[ ] terraform 
-
-[ ] kubernetes

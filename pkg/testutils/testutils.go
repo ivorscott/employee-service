@@ -41,7 +41,7 @@ func DBConnect() (*db.Repository, func() error) {
 		panic(err)
 	}
 
-	err = loadFixtures(repo.DB)
+	err = loadFixtures(repo.DB.DB)
 	if err != nil {
 		panic(err)
 	}

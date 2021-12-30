@@ -6,7 +6,7 @@ DB_URL=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTG
 default: develop
 
 generate:
-	swagger-codegen generate -i doc/api-doc.yml -l openapi -o cmd/employee/static/swagger-ui
+	@go generate ./...
 .PHONY: generate
 
 fmt:
@@ -14,6 +14,7 @@ fmt:
 .PHONY: fmt
 
 lint:
+	@golangci-lint --version
 	golangci-lint run
 .PHONY: lint
 
@@ -21,7 +22,7 @@ vet:
 	go vet ./...
 .PHONY: vet
 
-test: fmt lint vet
+test: generate fmt lint vet
 	go test --cover ./...
 .PHONY: test
 
@@ -29,7 +30,8 @@ build: test
 	go build ./cmd/employee
 .PHONY: build
 
-develop: generate
+develop:
+	swagger-codegen generate -i doc/api-doc.yml -l openapi -o cmd/employee/static/swagger-ui
 	CompileDaemon --build="go build ./cmd/employee" --log-prefix=false --command="./employee --db-disable-tls=true"
 .PHONY: develop
 
@@ -40,6 +42,8 @@ db:
 pg:
 	pgcli $(DB_URL)
 .PHONY: pg
+
+
 
 # ======================================================================================================================
 # Begins Migration and Seeding Helper
