@@ -7,7 +7,7 @@ default: develop
 
 generate:
 	@go generate ./...
-.PHONY: generate
+.PHONY: mock
 
 fmt:
 	go fmt ./...

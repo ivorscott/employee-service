@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	shouldUpdate  *bool
+	shouldUpdate *bool
+
 	testCtx       = context.Background()
 	testEmployees []model.Employee
 )

@@ -22,6 +22,7 @@ Clone `.env.sample` and rename it `.env`.
 ```bash
 make # start app
 docker-compose up -d # start containers
+make test
 ```
 
 ## Migration and Seeding
@@ -65,3 +66,4 @@ make db # enter postgres database
 
 The service does not run in a container during local development.
 Containers are only used for databases and observability services.
+

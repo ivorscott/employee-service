@@ -8,7 +8,7 @@ Repository config folder and package
 - [Migrations](#migrations)
 - [Golden Files](#golden-files)
 
-Repository concerns include configuration for data services, test fixtures, migrations, seeding, events and sample response data.
+Repository concerns include configuration for data services, test fixtures, golden files, migrations and seeding the database.  
 
 ```bash
 config # configuration for data services
@@ -106,7 +106,7 @@ That way you execute a seed file that is guaranteed to work.
 
 `res/migrations`
 
-Migrations are management internally via `db.MigrateUp()` and externally via 
+Migrations are managed via `res.MigrateUp()` and via 
 `make` commands. [Learn more](/README.md#migration-and-seeding).
 
 ## Golden Files
@@ -128,5 +128,4 @@ goldenFile := "employee.json"
 //if golden.ShouldUpdate() {
     testutils.SaveGoldenFile(&actual, goldenFile)
 //}
-
 ```
