@@ -2,9 +2,12 @@
 package testutils
 
 import (
+	"context"
 	"database/sql"
+	"testing"
 
 	"github.com/go-testfixtures/testfixtures/v3"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // required by testfixtures
 
 	"github.com/ivorscott/employee-service/pkg/config"
@@ -57,4 +60,17 @@ func loadFixtures(db *sql.DB) error {
 	}
 
 	return fixtures.Load()
+}
+
+// RunInTx runs test function in a database transaction.
+func RunInTx(fn func(t *testing.T, tx *sqlx.Tx)) func(t *testing.T) {
+	return func(t *testing.T) {
+		conn, Close := DBConnect()
+		defer Close()
+
+		conn.RunInTransaction(context.Background(), func(tx *sqlx.Tx) error {
+			fn(t, tx)
+			return nil
+		})
+	}
 }

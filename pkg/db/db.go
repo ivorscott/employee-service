@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/url"
 
 	"github.com/ivorscott/employee-service/pkg/config"
@@ -58,6 +59,34 @@ func NewRepository(cfg *config.AppConfig) (*Repository, func() error, error) {
 	}
 
 	return r, db.Close, nil
+}
+
+// RunInTransaction runs callback function in a transaction.
+func (r *Repository) RunInTransaction(ctx context.Context, fn func(*sqlx.Tx) error) error {
+	tx, err := r.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return err
+	}
+	return txRun(tx, fn)
+}
+
+func txRun(tx *sqlx.Tx, fn func(*sqlx.Tx) error) error {
+	defer func() {
+		if err := recover(); err != nil {
+			if err := tx.Rollback(); err != nil {
+				log.Printf("tx.Rollback panicked: %s", err)
+			}
+			panic(err)
+		}
+	}()
+
+	if err := fn(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			log.Printf("tx.Rollback failed: %s", err)
+		}
+		return err
+	}
+	return tx.Commit()
 }
 
 // StatusCheck returns nil if it can successfully talk to the database. It

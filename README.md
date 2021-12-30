@@ -90,7 +90,7 @@ Containers are only used for databases and observability services.
 
 [ ] add tests
 
-[ ] add goldenfiles
+[X] add goldenfiles
 
 [ ] add crud
 

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	testEmployee = "bc4cd1a1-4f0e-4e39-9960-e6b1cfe388db"
+	testEmployeeID = "bc4cd1a1-4f0e-4e39-9960-e6b1cfe388db"
 )
 
 func TestEmployeeRepository_FindEmployeeByID(t *testing.T) {
@@ -18,8 +18,8 @@ func TestEmployeeRepository_FindEmployeeByID(t *testing.T) {
 	defer Close()
 
 	repo := repository.NewEmployeeRepository(db)
-	employee, err := repo.FindEmployeeByID(testCtx, testEmployee)
+	employee, err := repo.FindEmployeeByID(testCtx, testEmployeeID)
 
 	assert.Nil(t, err)
-	assert.Equal(t, testEmployee, employee.ID)
+	assert.Equal(t, testEmployeeID, employee.ID)
 }
