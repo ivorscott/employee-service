@@ -6,18 +6,15 @@ Repository config folder and package
 - [Fixtures](#fixtures)
 - [Seeds](#seeds)
 - [Migrations](#migrations)
+- [Golden Files](#golden-files)
 
 Repository concerns include configuration for data services, test fixtures, migrations, seeding, events and sample response data.
 
 ```bash
 config # configuration for data services
-events # event publishing and subscriptions
 fixtures # test fixtures
+golden # golden files
 migrations # migrations
-testdata # response data examples
-  - events
-  - repository
-  - services
 seed # data for development
 ```
 
@@ -111,3 +108,25 @@ That way you execute a seed file that is guaranteed to work.
 
 Migrations are management internally via `db.MigrateUp()` and externally via 
 `make` commands. [Learn more](/README.md#migration-and-seeding).
+
+## Golden Files
+
+`res/golden`
+
+Goldenfiles are used in tests to compare database responses with previous queries preserved as snapshots in json format.
+If a database response changes, the golden file test fails and a new snapshot must be saved for the test to pass. 
+To update all golden files run:
+```
+go test ./... -update
+```
+Alternatively, if you want one golden file to update comment the coressponding
+code block:
+
+```go
+goldenFile := "employee.json"
+
+//if golden.ShouldUpdate() {
+    testutils.SaveGoldenFile(&actual, goldenFile)
+//}
+
+```
