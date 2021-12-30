@@ -63,19 +63,91 @@ components:
       type: object
       description: Represents an employee.
       properties:
-        id:
-          type: integer
-          description: Employee id.
-          example: 1
+        employee_id:
+          type: string
+          description: Employee Id.
+          example: 35d27bb4-c39e-4c10-9a64-aabc2490ec4d
+        auth0_id:
+          type: string
+          description: Auth0 Id.
+          example: 35d27bb4-c39e-4c10-9a64-aabc2490ec4d
+        email_address:
+          type: string
+          description: Email address.
+          example: people@devpie.io
         first_name:
           type: string
-          description: Emploee first name.
+          description: Employee first name.
           example: Adam
+        middle_name:
+          type: string
+          description: Employee middle name.
+          example: Julius
         last_name:
           type: string
-          description: Emploee last name.
+          description: Employee last name.
           example: Smith
-        job:
+        phone_number:
+          type: integer
+          description: Employee phone number.
+          example: 15144558913
+        birth_date:
           type: string
-          description: Employee job title.
-          example: Philosopher
+          description: Employee birth date.
+          example: 1984-02-01T00:00:00Z
+        hire_date:
+          type: string
+          description: Employee hire date.
+          example: 1984-02-01T00:00:00Z
+        picture:
+          type: string
+          description: Employee picture.
+          example: example.com/image/b34c58g92h
+        language:
+          type: string
+          description: Employee preferred language.
+          example: german
+        country:
+          type: string
+          description: Employee country of origin.
+          example: germany
+        city:
+          type: string
+          description: Employee city.
+          example: Belin
+        zipcode:
+          type: string
+          description: Employee postal code.
+          example: 12049
+        salary:
+          type: string
+          description: Employee salary.
+          example: 67,000
+        position:
+          type: string
+          description: Employee job position.
+          example: Software Engineer
+        emergency_contact_name:
+          type: string
+          description: Employee emergency contact name.
+          example: Anna Marie
+        emergency_contact_email:
+          type: string
+          description: Employee emergency contact email adress.
+          example: annamarie@gmail.com
+        emergency_contact_phone:
+          type: integer
+          description: Employee emergency contact phone number.
+          example: 2344532343
+        deleted:
+          type: boolean
+          description: Boolean value to flag profile for deletion.
+          example: true
+        updated_at:
+          type: string
+          description: Time of last profile update.
+          example: 2021-12-30T06:46:51Z
+        created_at:
+          type: string
+          description: Creation time of employee profile.
+          example: 2020-04-01T23:59:59Z

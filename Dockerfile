@@ -8,9 +8,6 @@ COPY . .
 FROM base as build-stage
 RUN go build -o main ./cmd/employee
 
-FROM build-stage as dev
-CMD ["./main"]
-
 FROM aquasec/trivy:0.4.4 as image-scan
 RUN trivy alpine:3.15 && \
     echo "No image vulnerabilities" > result

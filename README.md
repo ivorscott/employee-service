@@ -3,6 +3,7 @@
 Test Go Service
 
 __Required__
+- [make](https://formulae.brew.sh/formula/make)
 - [docker](https://docs.docker.com/desktop/)
 - [golangci-lint](https://formulae.brew.sh/formula/golangci-lint)
 - [CompileDaemon](https://github.com/githubnemo/CompileDaemon)
@@ -22,6 +23,7 @@ Clone `.env.sample` and rename it `.env`.
 ```bash
 make # start app
 docker-compose up -d # start containers
+make test
 ```
 
 ## Migration and Seeding
@@ -32,7 +34,7 @@ The service won't have any data until you seed its database.
 make seed <filepath> # apply seed from ./res/seed
 ```
 ### Seed Versioning
-We map seed files to specific migration versions. [Learn more](./res/seed/README.md).
+We map seed files to specific migration versions. [Learn more](/res/README.md#seeds).
 
 ### Migration Commands
 
@@ -65,3 +67,4 @@ make db # enter postgres database
 
 The service does not run in a container during local development.
 Containers are only used for databases and observability services.
+

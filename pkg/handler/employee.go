@@ -39,7 +39,11 @@ func (eh *EmployeeHandler) GetEmployee(w http.ResponseWriter, r *http.Request) e
 	defer span.End()
 
 	vars := mux.Vars(r)
-	e, err := eh.service.GetEmployeeByID(ctx, vars["employee-id"])
+	test, ok := vars["employee_id"]
+	if !ok {
+		return web.NewRequestError(repository.ErrInvalidID, http.StatusBadRequest)
+	}
+	e, err := eh.service.GetEmployeeByID(ctx, test)
 	if err != nil {
 		switch {
 		case errors.Is(err, repository.ErrInvalidID):

@@ -39,7 +39,7 @@ func API(
 	router.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", http.FileServer(http.FS(swagger))))
 
 	app := web.NewApp(router, shutdown, logger, mid...)
-	app.Handle("GET", "/employees/{employee-id}", "find employee", e.GetEmployee)
+	app.Handle("GET", "/employees/{employee_id}", "find employee", e.GetEmployee)
 
 	return app
 }

@@ -94,7 +94,7 @@ migration:
     endif
 
 	@migrate create -ext sql -dir ./res/migrations -seq $(name) \
-	&& echo $(CHECKMARK) Successfully created migrations!
+	&& echo $(CHECKMARK) Successfully created migration!
 .PHONY: migration
 
 version:

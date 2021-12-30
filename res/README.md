@@ -8,7 +8,7 @@ Repository config folder and package
 - [Migrations](#migrations)
 - [Golden Files](#golden-files)
 
-Repository concerns include configuration for data services, test fixtures, migrations, seeding, events and sample response data.
+Repository concerns include configuration for data services, test fixtures, golden files, migrations and seeding the database.  
 
 ```bash
 config # configuration for data services
@@ -49,9 +49,9 @@ We map seed files to specific migration versions and ensure seed files don't dep
 
 Each seed file MUST:
 
-1) EMPTY all available tables
-2) SEED all available tables.
-3) MAP to a migration
+1) __EMPTY__ all available tables
+2) __SEED__ all available tables.
+3) __MAP__ to a migration
 
 Seed file names are prefixed with the migration version they map to.
 
@@ -106,7 +106,7 @@ That way you execute a seed file that is guaranteed to work.
 
 `res/migrations`
 
-Migrations are management internally via `db.MigrateUp()` and externally via 
+Migrations are managed via `res.MigrateUp()` and via 
 `make` commands. [Learn more](/README.md#migration-and-seeding).
 
 ## Golden Files
@@ -123,10 +123,12 @@ Alternatively, if you want one golden file to update comment the coressponding
 code block:
 
 ```go
+// pkg/repository/repository_test.go
+
+
 goldenFile := "employee.json"
 
 //if golden.ShouldUpdate() {
     testutils.SaveGoldenFile(&actual, goldenFile)
 //}
-
 ```
