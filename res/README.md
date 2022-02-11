@@ -119,12 +119,11 @@ To update all golden files run:
 ```
 go test ./... -update
 ```
-Alternatively, if you want one golden file to update comment the coressponding
+Alternatively, if you want one golden file to update, comment the corresponding
 code block:
 
 ```go
 // pkg/repository/repository_test.go
-
 
 goldenFile := "employee.json"
 
