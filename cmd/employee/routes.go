@@ -37,7 +37,7 @@ func API(
 
 	app := web.NewApp(router, shutdown, logger, mid...)
 	app.Handle("GET", "/employees/{employee_id}", "find employee", employeeHandler.GetEmployee)
-	app.Handle("PATCH", "/employees/{employee_id}", "find employee", employeeHandler.UpdateEmployee)
+	app.Handle("PATCH", "/employees/{employee_id}", "update employee", employeeHandler.UpdateEmployee)
 
 	return app
 }
