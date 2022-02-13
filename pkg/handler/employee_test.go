@@ -37,21 +37,23 @@ func TestEmployeeHandler_GetEmployee(t *testing.T) {
 }
 
 type employeeHandlerDeps struct {
-	logger  *zap.Logger
-	service *mocks.EmployeeService
+	logger    *zap.Logger
+	service   *mocks.EmployeeService
+	publisher *mocks.RabbitMQPublisher
 }
 
 func setupEmployeeRouter() (http.Handler, employeeHandlerDeps) {
 	router := mux.NewRouter()
 	logger := zap.NewNop()
 	service := &mocks.EmployeeService{}
+	publisher := &mocks.RabbitMQPublisher{}
 
-	employee := handler.NewEmployeeHandler(logger, service)
+	employee := handler.NewEmployeeHandler(logger, service, publisher)
 
 	router.Methods("GET").Path("/employees/{employee_id}").
 		HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_ = employee.GetEmployee(w, r)
 		})
 
-	return router, employeeHandlerDeps{logger, service}
+	return router, employeeHandlerDeps{logger, service, publisher}
 }

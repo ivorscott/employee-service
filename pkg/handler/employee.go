@@ -17,19 +17,22 @@ import (
 
 type employeeService interface {
 	GetEmployeeByID(ctx context.Context, id string) (model.Employee, error)
+	UpdateEmployee(ctx context.Context, data []byte) ([]byte, error)
 }
 
 // EmployeeHandler provides method handlers for employee selection.
 type EmployeeHandler struct {
-	logger  *zap.Logger
-	service employeeService
+	logger    *zap.Logger
+	service   employeeService
+	publisher rabbitMQPublisher
 }
 
 // NewEmployeeHandler creates a new employee handler.
-func NewEmployeeHandler(logger *zap.Logger, service employeeService) *EmployeeHandler {
+func NewEmployeeHandler(logger *zap.Logger, service employeeService, publisher rabbitMQPublisher) *EmployeeHandler {
 	return &EmployeeHandler{
-		logger:  logger,
-		service: service,
+		logger:    logger,
+		service:   service,
+		publisher: publisher,
 	}
 }
 
@@ -59,4 +62,17 @@ func (eh *EmployeeHandler) GetEmployee(w http.ResponseWriter, r *http.Request) e
 	}
 
 	return web.Respond(ctx, w, e, http.StatusOK)
+}
+
+// UpdateEmployee updates an employee.
+func (eh *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request) error {
+	ctx, span := trace.NewSpan(r.Context(), "handler.employee.UpdateSalary", nil)
+	defer span.End()
+
+	// call service layer and handle result
+
+	// publish message
+	// e.g., publisher.Publish(...)
+
+	return web.Respond(ctx, w, nil, http.StatusOK)
 }

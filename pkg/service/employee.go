@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/ivorscott/employee-service/pkg/model"
 	"github.com/ivorscott/employee-service/pkg/repository"
@@ -35,4 +36,20 @@ func (es *EmployeeService) GetEmployeeByID(ctx context.Context, id string) (mode
 	}
 
 	return es.employeeRepo.FindEmployeeByID(ctx, id)
+}
+
+// UpdateEmployee find an employee by id.
+func (es *EmployeeService) UpdateEmployee(ctx context.Context, data []byte) ([]byte, error) {
+	_, span := trace.NewSpan(ctx, "service.employee.GetEmployeeByID", nil)
+	defer span.End()
+
+	// perform business logic
+	// call repository layer etc.
+
+	b, err := json.Marshal(model.Employee{})
+	if err != nil {
+		return []byte{}, nil
+	}
+
+	return b, nil
 }

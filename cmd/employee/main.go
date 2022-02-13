@@ -10,12 +10,17 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/ivorscott/employee-service/pkg/adapter"
 	"github.com/ivorscott/employee-service/pkg/config"
 	"github.com/ivorscott/employee-service/pkg/db"
+	"github.com/ivorscott/employee-service/pkg/handler"
 	"github.com/ivorscott/employee-service/pkg/repository"
 	"github.com/ivorscott/employee-service/pkg/service"
 	"github.com/ivorscott/employee-service/pkg/trace"
 	"github.com/ivorscott/employee-service/res"
+
+	"github.com/rabbitmq/amqp091-go"
+	"github.com/wagslane/go-rabbitmq"
 
 	"go.uber.org/zap"
 )
@@ -64,15 +69,32 @@ func run(logger *zap.Logger, repo *db.Repository, cfg *config.AppConfig) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
-	employeeRepository := repository.NewEmployeeRepository(repo)
+	rabbitConn := fmt.Sprintf("%s:%s@%s", cfg.RabbitMQ.User, cfg.RabbitMQ.Password, cfg.RabbitMQ.Host)
 
+	publisher := adapter.NewRabbitMQPublisher(
+		logger,
+		rabbitConn,
+		amqp091.Config{},
+		rabbitmq.WithPublisherOptionsLogging,
+	)
+
+	employeeRepository := repository.NewEmployeeRepository(repo)
 	employeeService := service.NewEmployeeService(logger, employeeRepository)
+	employeeHandler := handler.NewEmployeeHandler(logger, employeeService, publisher)
+
+	// Listen to incoming messages
+	go func() {
+		l := adapter.NewRabbitMQListener(logger, rabbitConn, amqp091.Config{})
+		l.Listen("my_queue", []string{"routing_key1"}, employeeService.UpdateEmployee)
+		// l.Listen("my_queue", []string{"routing_key2"}, employeeService.UpdateMeetings)
+		// l.Listen("my_queue", []string{"routing_key2"}, employeeService.UpdateTeam)
+	}()
 
 	srv := &http.Server{
 		Addr:         "0.0.0.0:8080",
 		WriteTimeout: cfg.Web.WriteTimeout,
 		ReadTimeout:  cfg.Web.ReadTimeout,
-		Handler:      API(shutdown, logger, content, employeeService),
+		Handler:      API(shutdown, logger, content, employeeHandler),
 	}
 	serverErrors := make(chan error, 1)
 

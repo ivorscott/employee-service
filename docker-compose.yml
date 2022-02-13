@@ -150,6 +150,15 @@ services:
       - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
       - "16686:16686"   # HTTP server (browser UI)
 
+  rabbitmq:
+    image: rabbitmq:3.9.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./data/rabbitmq/data:/var/lib/rabbitmq/
+      - ./data/rabbitmq/log/:/var/log/rabbitmq
+
 volumes:
   employee_data:
   employee_testdata: # for test fixtures

@@ -8,7 +8,6 @@ import (
 
 	"github.com/ivorscott/employee-service/pkg/handler"
 	"github.com/ivorscott/employee-service/pkg/middleware"
-	"github.com/ivorscott/employee-service/pkg/service"
 	"github.com/ivorscott/employee-service/pkg/web"
 
 	"github.com/gorilla/mux"
@@ -21,10 +20,8 @@ func API(
 	shutdown chan os.Signal,
 	logger *zap.Logger,
 	content embed.FS,
-	employeeService *service.EmployeeService,
+	employeeHandler *handler.EmployeeHandler,
 ) http.Handler {
-	e := handler.NewEmployeeHandler(logger, employeeService)
-
 	mid := []web.Middleware{
 		middleware.Metric(),
 		middleware.Logger(logger),
@@ -39,7 +36,8 @@ func API(
 	router.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", http.FileServer(http.FS(swagger))))
 
 	app := web.NewApp(router, shutdown, logger, mid...)
-	app.Handle("GET", "/employees/{employee_id}", "find employee", e.GetEmployee)
+	app.Handle("GET", "/employees/{employee_id}", "find employee", employeeHandler.GetEmployee)
+	app.Handle("PATCH", "/employees/{employee_id}", "find employee", employeeHandler.UpdateEmployee)
 
 	return app
 }

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS employees (
     country VARCHAR NOT NULL,
     city VARCHAR NOT NULL,
     zipcode VARCHAR NOT NULL,
-    salary VARCHAR NOT NUll,
+    salary INTEGER NOT NUll,
     position VARCHAR NOT NULL,
     emergency_contact_name VARCHAR,
     emergency_contact_email VARCHAR,

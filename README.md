@@ -33,7 +33,6 @@ The service won't have any data until you seed its database.
 ```bash
 make seed <filepath> # apply seed from ./res/seed
 ```
-### Seed Versioning
 We map seed files to specific migration versions. [Learn more](/res/README.md#seeds).
 
 ### Migration Commands

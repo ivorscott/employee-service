@@ -5,3 +5,4 @@ main
 log/*
 !log/.gitkeep
 .env
+data

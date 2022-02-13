@@ -36,6 +36,11 @@ type AppConfig struct {
 		Name       string `conf:"default:employee_test,noprint"`
 		DisableTLS bool   `conf:"default:true"`
 	}
+	RabbitMQ struct {
+		User     string `conf:"default:guest,noprint"`
+		Password string `conf:"default:guest,noprint"`
+		Host     string `conf:"default:localhost,noprint"`
+	}
 }
 
 // NewAppConfig creates a new AppConfig for the application.

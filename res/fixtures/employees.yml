@@ -12,7 +12,7 @@
   country: united states of america
   city: Basking Ridge
   zipcode: "07920"
-  salary: "160,000"
+  salary: 160000
   position: Senior Software Engineer
   created_at: 2018-09-01 23:59:59
   updated_at: 2021-12-30 06:46:51
@@ -31,7 +31,7 @@
   country: germany
   city: Berlin
   zipcode: 12049
-  salary: 67,000
+  salary: 67000
   position: Software Engineer
   created_at: 2020-04-01 23:59:59
   updated_at: 2021-12-30 06:46:51

@@ -7,6 +7,7 @@ require (
 	github.com/ardanlabs/conf v1.5.0
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
+	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-testfixtures/testfixtures/v3 v3.6.1
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/uuid v1.3.0
@@ -15,7 +16,9 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
+	github.com/rabbitmq/amqp091-go v0.0.0-20210823000215-c428a6150891
 	github.com/stretchr/testify v1.7.0
+	github.com/wagslane/go-rabbitmq v0.7.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.28.0
 	go.opentelemetry.io/otel v1.3.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.3.0
@@ -50,7 +53,10 @@ require (
 	go.opentelemetry.io/otel/metric v0.26.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
