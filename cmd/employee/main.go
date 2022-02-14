@@ -69,7 +69,7 @@ func run(logger *zap.Logger, cfg *config.AppConfig) error {
 		logger.Fatal("", zap.Error(err))
 	}
 
-	rabbitConn := fmt.Sprintf("%s:%s@%s", cfg.RabbitMQ.User, cfg.RabbitMQ.Password, cfg.RabbitMQ.Host)
+	rabbitConn := fmt.Sprintf("amqp://%s:%s@%s", cfg.RabbitMQ.User, cfg.RabbitMQ.Password, cfg.RabbitMQ.Host)
 
 	publisher := adapter.NewRabbitMQPublisher(
 		logger,
