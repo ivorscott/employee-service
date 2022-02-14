@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/ivorscott/employee-service/pkg/db"
-	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/pkg/trace"
+	"github.com/devpies/employee-service/pkg/db"
+	"github.com/devpies/employee-service/pkg/model"
+	"github.com/devpies/employee-service/pkg/trace"
 
 	sq "github.com/Masterminds/squirrel"
 )

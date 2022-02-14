@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/pkg/testutils"
+	"github.com/devpies/employee-service/pkg/model"
+	"github.com/devpies/employee-service/pkg/testutils"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

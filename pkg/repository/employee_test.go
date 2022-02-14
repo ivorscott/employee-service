@@ -3,8 +3,8 @@ package repository_test
 import (
 	"testing"
 
-	"github.com/ivorscott/employee-service/pkg/repository"
-	"github.com/ivorscott/employee-service/pkg/testutils"
+	"github.com/devpies/employee-service/pkg/repository"
+	"github.com/devpies/employee-service/pkg/testutils"
 
 	"github.com/stretchr/testify/assert"
 )

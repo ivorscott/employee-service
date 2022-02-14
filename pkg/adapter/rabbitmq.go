@@ -3,9 +3,9 @@ package adapter
 import (
 	"context"
 
-	"github.com/ivorscott/employee-service/pkg/msg"
+	"github.com/devpies/employee-service/pkg/msg"
 
-	"github.com/ivorscott/employee-service/pkg/web"
+	"github.com/devpies/employee-service/pkg/web"
 	"github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
 )

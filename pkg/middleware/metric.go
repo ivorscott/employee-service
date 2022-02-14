@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ivorscott/employee-service/pkg/web"
+	"github.com/devpies/employee-service/pkg/web"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"

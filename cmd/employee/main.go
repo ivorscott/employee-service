@@ -10,20 +10,19 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ivorscott/employee-service/pkg/adapter"
-	"github.com/ivorscott/employee-service/pkg/config"
-	"github.com/ivorscott/employee-service/pkg/db"
-	"github.com/ivorscott/employee-service/pkg/handler"
-	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/pkg/msg"
-	"github.com/ivorscott/employee-service/pkg/repository"
-	"github.com/ivorscott/employee-service/pkg/service"
-	"github.com/ivorscott/employee-service/pkg/trace"
-	"github.com/ivorscott/employee-service/res"
+	"github.com/devpies/employee-service/pkg/adapter"
+	"github.com/devpies/employee-service/pkg/config"
+	"github.com/devpies/employee-service/pkg/db"
+	"github.com/devpies/employee-service/pkg/handler"
+	"github.com/devpies/employee-service/pkg/model"
+	"github.com/devpies/employee-service/pkg/msg"
+	"github.com/devpies/employee-service/pkg/repository"
+	"github.com/devpies/employee-service/pkg/service"
+	"github.com/devpies/employee-service/pkg/trace"
+	"github.com/devpies/employee-service/res"
 
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/wagslane/go-rabbitmq"
-
 	"go.uber.org/zap"
 )
 

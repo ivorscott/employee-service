@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ivorscott/employee-service/pkg/handler"
-	"github.com/ivorscott/employee-service/pkg/middleware"
-	"github.com/ivorscott/employee-service/pkg/web"
+	"github.com/devpies/employee-service/pkg/handler"
+	"github.com/devpies/employee-service/pkg/middleware"
+	"github.com/devpies/employee-service/pkg/web"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

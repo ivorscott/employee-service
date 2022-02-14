@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/pkg/repository"
-	"github.com/ivorscott/employee-service/pkg/trace"
+	"github.com/devpies/employee-service/pkg/model"
+	"github.com/devpies/employee-service/pkg/repository"
+	"github.com/devpies/employee-service/pkg/trace"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"

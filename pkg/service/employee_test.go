@@ -3,8 +3,8 @@ package service_test
 import (
 	"testing"
 
-	"github.com/ivorscott/employee-service/pkg/mocks"
-	"github.com/ivorscott/employee-service/pkg/service"
+	"github.com/devpies/employee-service/pkg/mocks"
+	"github.com/devpies/employee-service/pkg/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

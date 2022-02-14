@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/ivorscott/employee-service/pkg/web"
+	"github.com/devpies/employee-service/pkg/web"
 )
 
 // Error middleware handles errors coming out of the call chain. It detects normal

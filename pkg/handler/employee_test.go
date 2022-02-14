@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
 
-	"github.com/ivorscott/employee-service/pkg/handler"
-	"github.com/ivorscott/employee-service/pkg/mocks"
+	"github.com/devpies/employee-service/pkg/handler"
+	"github.com/devpies/employee-service/pkg/mocks"
 )
 
 func TestEmployeeHandler_GetEmployee(t *testing.T) {

@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/devpies/employee-service/pkg/trace"
 	"github.com/gorilla/mux"
-	"github.com/ivorscott/employee-service/pkg/trace"
 	"go.uber.org/zap"
 )
 

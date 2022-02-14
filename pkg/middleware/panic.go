@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/ivorscott/employee-service/pkg/web"
+	"github.com/devpies/employee-service/pkg/web"
 	"go.uber.org/zap"
 
 	"fmt"

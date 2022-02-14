@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/url"
 
-	"github.com/ivorscott/employee-service/pkg/config"
+	"github.com/devpies/employee-service/pkg/config"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"

@@ -10,9 +10,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // required by testfixtures
 
-	"github.com/ivorscott/employee-service/pkg/config"
-	"github.com/ivorscott/employee-service/pkg/db"
-	"github.com/ivorscott/employee-service/res"
+	"github.com/devpies/employee-service/pkg/config"
+	"github.com/devpies/employee-service/pkg/db"
+	"github.com/devpies/employee-service/res"
 )
 
 const (

@@ -6,10 +6,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/ivorscott/employee-service/pkg/model"
-	"github.com/ivorscott/employee-service/pkg/repository"
-	"github.com/ivorscott/employee-service/pkg/trace"
-	"github.com/ivorscott/employee-service/pkg/web"
+	"github.com/devpies/employee-service/pkg/model"
+	"github.com/devpies/employee-service/pkg/repository"
+	"github.com/devpies/employee-service/pkg/trace"
+	"github.com/devpies/employee-service/pkg/web"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"

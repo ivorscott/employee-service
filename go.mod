@@ -1,4 +1,4 @@
-module github.com/ivorscott/employee-service
+module github.com/devpies/employee-service
 
 go 1.17
 
