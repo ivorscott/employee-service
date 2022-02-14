@@ -1,12 +1,29 @@
-package message
+package msg
+
+import "encoding/json"
+
+// UnmarshalCreateEmployeeCommand parses the JSON-encoded data and returns Message.
+func UnmarshalCreateEmployeeCommand(data []byte) (CreateEmployeeCommand, error) {
+	var m CreateEmployeeCommand
+	err := json.Unmarshal(data, &m)
+	return m, err
+}
+
+// Marshal JSON encodes Message.
+func (m *CreateEmployeeCommand) Marshal() ([]byte, error) {
+	return json.Marshal(m)
+}
 
 const (
-	CreateEmployee CommandType = "CreateEmployee"
+	// CreateEmployee is a MessageType representing an Employee creation command.
+	CreateEmployee MessageType = "CreateEmployee"
 )
 
+// CreateEmployeeCommandType represents an Employee creation command type.
 type CreateEmployeeCommandType string
 
 const (
+	// TypeCreateEmployee represents a CreateEmployee command.
 	TypeCreateEmployee CreateEmployeeCommandType = "CreateEmployee"
 )
 

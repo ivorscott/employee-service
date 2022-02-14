@@ -39,14 +39,14 @@ func TestEmployeeHandler_GetEmployee(t *testing.T) {
 type employeeHandlerDeps struct {
 	logger    *zap.Logger
 	service   *mocks.EmployeeService
-	publisher *mocks.RabbitMQPublisher
+	publisher *mocks.RabbitmqAdapter
 }
 
 func setupEmployeeRouter() (http.Handler, employeeHandlerDeps) {
 	router := mux.NewRouter()
 	logger := zap.NewNop()
 	service := &mocks.EmployeeService{}
-	publisher := &mocks.RabbitMQPublisher{}
+	publisher := &mocks.RabbitmqAdapter{}
 
 	employee := handler.NewEmployeeHandler(logger, service, publisher)
 

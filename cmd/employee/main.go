@@ -14,6 +14,8 @@ import (
 	"github.com/ivorscott/employee-service/pkg/config"
 	"github.com/ivorscott/employee-service/pkg/db"
 	"github.com/ivorscott/employee-service/pkg/handler"
+	"github.com/ivorscott/employee-service/pkg/model"
+	"github.com/ivorscott/employee-service/pkg/msg"
 	"github.com/ivorscott/employee-service/pkg/repository"
 	"github.com/ivorscott/employee-service/pkg/service"
 	"github.com/ivorscott/employee-service/pkg/trace"
@@ -37,16 +39,6 @@ func main() {
 		logger.Fatal("", zap.Error(err))
 	}
 
-	repo, Close, err := db.NewRepository(cfg)
-	if err != nil {
-		logger.Fatal("", zap.Error(err))
-	}
-	defer Close()
-
-	if err = res.MigrateUp(repo.URL.String()); err != nil {
-		logger.Fatal("", zap.Error(err))
-	}
-
 	ctx := context.Background()
 	prv, err := trace.NewProvider(trace.ProviderConfig{
 		JaegerEndpoint: "http://localhost:14268/api/traces",
@@ -60,14 +52,23 @@ func main() {
 	}
 	defer prv.Close(ctx)
 
-	if err := run(logger, repo, cfg); err != nil {
+	if err = run(logger, cfg); err != nil {
 		logger.Panic("", zap.Error(err))
 	}
 }
 
-func run(logger *zap.Logger, repo *db.Repository, cfg *config.AppConfig) error {
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+func run(logger *zap.Logger, cfg *config.AppConfig) error {
+	var err error
+
+	repo, Close, err := db.NewRepository(cfg)
+	if err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
+	defer Close()
+
+	if err = res.MigrateUp(repo.URL.String()); err != nil {
+		logger.Fatal("", zap.Error(err))
+	}
 
 	rabbitConn := fmt.Sprintf("%s:%s@%s", cfg.RabbitMQ.User, cfg.RabbitMQ.Password, cfg.RabbitMQ.Host)
 
@@ -85,10 +86,26 @@ func run(logger *zap.Logger, repo *db.Repository, cfg *config.AppConfig) error {
 	// Listen to incoming messages
 	go func() {
 		l := adapter.NewRabbitMQListener(logger, rabbitConn, amqp091.Config{})
-		l.Listen("my_queue", []string{"routing_key1"}, employeeService.UpdateEmployee)
-		// l.Listen("my_queue", []string{"routing_key2"}, employeeService.UpdateMeetings)
-		// l.Listen("my_queue", []string{"routing_key2"}, employeeService.UpdateTeam)
+		l.Listen(msg.CreateEmployee, "my_queue", []string{"routing_key1"}, func(ctx context.Context, message msg.Message) error {
+			e, eerr := msg.UnmarshalCreateEmployeeCommand(message.Data)
+			if eerr != nil {
+				return eerr
+			}
+			return employeeService.CreateEmployee(ctx, model.NewEmployee(e.Data))
+		})
+		l.Listen(msg.EmployeeUpdated, "my_queue", []string{"routing_key1"}, func(ctx context.Context, message msg.Message) error {
+			e, eerr := msg.UnmarshalEmployeeUpdatedEvent(message.Data)
+			if eerr != nil {
+				return eerr
+			}
+			_, eerr = employeeService.UpdateEmployee(ctx, model.UpdateEmployee(e.Data))
+			return eerr
+		})
 	}()
+
+	// Gracefully shutdown
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
 	srv := &http.Server{
 		Addr:         "0.0.0.0:8080",
@@ -104,7 +121,7 @@ func run(logger *zap.Logger, repo *db.Repository, cfg *config.AppConfig) error {
 	}()
 
 	select {
-	case err := <-serverErrors:
+	case err = <-serverErrors:
 		return fmt.Errorf("server error on startup : %w", err)
 	case sig := <-shutdown:
 		logger.Info(fmt.Sprintf("Start shutdown due to %s signal", sig))
@@ -113,7 +130,7 @@ func run(logger *zap.Logger, repo *db.Repository, cfg *config.AppConfig) error {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
 		defer cancel()
 
-		err := srv.Shutdown(ctx)
+		err = srv.Shutdown(ctx)
 		if err != nil {
 			err = srv.Close()
 		}

@@ -17,18 +17,18 @@ import (
 
 type employeeService interface {
 	GetEmployeeByID(ctx context.Context, id string) (model.Employee, error)
-	UpdateEmployee(ctx context.Context, data []byte) ([]byte, error)
+	UpdateEmployee(ctx context.Context, employee model.UpdateEmployee) (model.Employee, error)
 }
 
 // EmployeeHandler provides method handlers for employee selection.
 type EmployeeHandler struct {
 	logger    *zap.Logger
 	service   employeeService
-	publisher rabbitMQPublisher
+	publisher rabbitmqAdapter
 }
 
 // NewEmployeeHandler creates a new employee handler.
-func NewEmployeeHandler(logger *zap.Logger, service employeeService, publisher rabbitMQPublisher) *EmployeeHandler {
+func NewEmployeeHandler(logger *zap.Logger, service employeeService, publisher rabbitmqAdapter) *EmployeeHandler {
 	return &EmployeeHandler{
 		logger:    logger,
 		service:   service,

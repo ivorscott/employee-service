@@ -33,22 +33,20 @@ func (_m *EmployeeService) GetEmployeeByID(ctx context.Context, id string) (mode
 	return r0, r1
 }
 
-// UpdateEmployee provides a mock function with given fields: ctx, data
-func (_m *EmployeeService) UpdateEmployee(ctx context.Context, data []byte) ([]byte, error) {
-	ret := _m.Called(ctx, data)
+// UpdateEmployee provides a mock function with given fields: ctx, employee
+func (_m *EmployeeService) UpdateEmployee(ctx context.Context, employee model.UpdateEmployee) (model.Employee, error) {
+	ret := _m.Called(ctx, employee)
 
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(context.Context, []byte) []byte); ok {
-		r0 = rf(ctx, data)
+	var r0 model.Employee
+	if rf, ok := ret.Get(0).(func(context.Context, model.UpdateEmployee) model.Employee); ok {
+		r0 = rf(ctx, employee)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
+		r0 = ret.Get(0).(model.Employee)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, []byte) error); ok {
-		r1 = rf(ctx, data)
+	if rf, ok := ret.Get(1).(func(context.Context, model.UpdateEmployee) error); ok {
+		r1 = rf(ctx, employee)
 	} else {
 		r1 = ret.Error(1)
 	}
