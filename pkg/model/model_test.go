@@ -1,2 +1,2 @@
-//go:generate mockery -all -dir . -case snake -output ../mocks
+//go:generate mockery --all --dir . --case snake --output ../mocks --exported
 package model_test

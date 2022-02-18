@@ -10,6 +10,7 @@ __Required__
 - [swagger-codegen](https://formulae.brew.sh/formula/swagger-codegen)
 - [golang-migrate](https://formulae.brew.sh/formula/golang-migrate)
 - [psql](https://formulae.brew.sh/formula/postgresql)
+- [mockery](https://github.com/vektra/mockery)
 
 __Optional__
 - [pgcli](https://formulae.brew.sh/formula/pgcli)
