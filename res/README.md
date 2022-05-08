@@ -47,12 +47,6 @@ as databases change.
 
 We map seed files to specific migration versions and ensure seed files don't depend on each other.
 
-Each seed file MUST:
-
-1) __EMPTY__ all available tables
-2) __SEED__ all available tables.
-3) __MAP__ to a migration
-
 Seed file names are prefixed with the migration version they map to.
 
 For example, these migration files:
