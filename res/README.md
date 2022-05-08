@@ -45,9 +45,7 @@ as databases change.
 
 ### How it works
 
-We map seed files to specific migration versions and ensure seed files don't depend on each other.
-
-Seed file names are prefixed with the migration version they map to.
+We map seed files to specific migration versions. Seed file names are prefixed with the migration version they map to.
 
 For example, these migration files:
 ```bash
