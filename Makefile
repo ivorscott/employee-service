@@ -90,7 +90,7 @@ MIGRATIONS_PATH="./res/migrations"
 
 migration:
     ifndef name
-		$(error ${err_create_migration}))
+		$(error ${err_create_migration})
     endif
 
 	@migrate create -ext sql -dir ./res/migrations -seq $(name) \
@@ -124,7 +124,7 @@ downfall:
 # About force https://bit.ly/3exuENS
 force:
     ifndef num
-		$(error ${err_force_migration}))
+		$(error ${err_force_migration})
     endif
 
 	@migrate -path $(MIGRATIONS_PATH) -verbose -database $(DB_URL) force $(num) \
@@ -133,7 +133,7 @@ force:
 
 seed:
     ifndef name
-		$(error "Missing database name"))
+		$(error "Missing database name")
     endif
 	@psql -h $(POSTGRES_HOST) -U $(POSTGRES_USER) -p $(POSTGRES_PORT) $(POSTGRES_DB) -f ./res/seed/$(name).sql
 .PHONY: seed res/seed/*
