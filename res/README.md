@@ -39,11 +39,7 @@ the database.__ https://github.com/go-testfixtures/testfixtures
 
 `res/seed`
 
-Seed data should be updated as databases change.
-
-### How it works
-
-Each table should have a corresponding seed file.
+Seed data should be updated as databases change. Keep it simple and maintain a single seed file for each database used by the service.
 
 ## Migrations
 
