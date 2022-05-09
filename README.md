@@ -32,7 +32,7 @@ make test
 The service won't have any data until you seed its database.
 
 ```bash
-make seed # apply seed from ./res/seed
+make seed
 ```
 
 ### Migration Commands
