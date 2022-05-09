@@ -32,9 +32,8 @@ make test
 The service won't have any data until you seed its database.
 
 ```bash
-make seed <filepath> # apply seed from ./res/seed
+make seed # apply seed from ./res/seed
 ```
-We map seed files to specific migration versions. [Learn more](/res/README.md#seeds).
 
 ### Migration Commands
 
