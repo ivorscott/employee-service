@@ -39,60 +39,11 @@ the database.__ https://github.com/go-testfixtures/testfixtures
 
 `res/seed`
 
-Test fixtures are not loaded into development databases. For development, seed files are used. Seed files are preserved and
-versioned to maintain healthy development workflows with proper data 
-as databases change. 
+Seed data should be updated as databases change.
 
 ### How it works
 
-We map seed files to specific migration versions. Seed file names are prefixed with the migration version they map to.
-
-For example, these migration files:
-```bash
-# Migration files
-
-000001_add_employees_table.down.sql
-000001_add_employees_table.up.sql
-```
-Map to:
-```
-000001_seed.sql
-```
-Seed files are placed under `res/seed`.
-
-### Not all migrations will need a seed file
-
-You may have more migrations than seed files because not all migrations require seed data.
-
-For example,
-```bash
-1_migration 
-2_migration
-3_migration
-4_migration
-
-1_seed 
-4_seed
-```
-
-#### Rule of thumb
-
-1. If your current migration maps to a seed file, apply it.
-
-
-2. If your current migration doesn't map to a seed file, __and migrating up is not an option__, migrate down to one that does, 
-apply the seed, then migrate back up again.
-
-
-Continuing the example above, if you want to seed, and your migration version was __3_migration__, without migrating up, you could do:
-
-```bash
- make down 2
- make seed ./res/seed/000001_seed.sql
- make up 2
-```
-
-That way you execute a seed file that is guaranteed to work.
+Each table should have a corresponding seed file.
 
 ## Migrations
 
