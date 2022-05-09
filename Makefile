@@ -48,7 +48,7 @@ pg:
 # ======================================================================================================================
 # Begins Migration and Seeding Helper
 # ======================================================================================================================
-# For the following usage -> "make migration <name>" http://bit.ly/37TR1r2
+# For the following usage -> "make migration <name>", "make seed <name>" http://bit.ly/37TR1r2
 ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),migration seed))
   name := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(name):;@:)
