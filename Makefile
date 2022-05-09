@@ -132,7 +132,10 @@ force:
 .PHONY: force
 
 seed:
-	@psql -h $(POSTGRES_HOST) -U $(POSTGRES_USER) -p $(POSTGRES_PORT) $(POSTGRES_DB) -f ./res/seed/data.sql
+    ifndef name
+		$(error "Missing database name"))
+    endif
+	@psql -h $(POSTGRES_HOST) -U $(POSTGRES_USER) -p $(POSTGRES_PORT) $(POSTGRES_DB) -f ./res/seed/$(name).sql
 .PHONY: seed res/seed/*
 
 # ======================================================================================================================
