@@ -22,8 +22,8 @@ __Optional__
 Clone `.env.sample` and rename it `.env`.
 
 ```bash
-make # start app
 docker-compose up -d # start containers
+make # start app
 make test
 ```
 
