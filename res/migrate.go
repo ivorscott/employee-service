@@ -1,4 +1,4 @@
-// Package res contains repository configuration.
+// Package res contains reseources for the project.
 package res
 
 import (
