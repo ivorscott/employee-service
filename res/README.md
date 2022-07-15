@@ -8,7 +8,7 @@ Resources for the project
 - [Migrations](#migrations)
 - [Golden Files](#golden-files)
 
-Resources includes configuration for data services, test fixtures, golden files, migrations and seeding the database.  
+The resource folder includes configuration for data services, test fixtures, golden files, migrations and seeding the database.  
 
 ```bash
 config # configuration for data services
