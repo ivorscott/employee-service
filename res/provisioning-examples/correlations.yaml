@@ -1,0 +1,64 @@
+# ============================================================================
+# Correlations as code - APPENDIX, NOT LOADED BY DEFAULT
+# ============================================================================
+#
+# This directory is deliberately NOT mounted into Grafana. Two reasons:
+#
+#  1. The lab is about building a correlation by hand first. If it were
+#     provisioned, it would already exist.
+#  2. Provisioned correlations are READ-ONLY in the UI. You could look but not
+#     edit, which is the wrong way round for learning.
+#
+# Once you have done it by hand, this is the shape you hand to your admins,
+# because they will not configure it by clicking - they manage Grafana as code.
+#
+# TO USE IT: mount this directory as
+#   ./res/provisioning-examples:/etc/grafana/provisioning/correlations:ro
+# and restart Grafana.
+#
+# ---------------------------------------------------------------------------
+# IMPORTANT: verify the schema against your Grafana version before trusting it.
+# The correlations provisioning keys have changed across releases. Rather than
+# copying this file on faith, create the correlation in the UI and then dump
+# the authoritative payload from the API:
+#
+#   curl -s http://localhost:3000/api/datasources/correlations | jq
+#
+# That output is the source of truth for your version. Reshape it into the
+# provisioning format below.
+# ---------------------------------------------------------------------------
+
+apiVersion: 1
+
+correlations:
+  - uid: status-to-logs
+    label: "View logs for this status"
+    description: >-
+      Jumps from a point on the Response status panel to the matching
+      employee-service log lines in Loki, filtered to the same status code and
+      the same time range.
+
+    # Source: where the click happens (Prometheus).
+    # Target: where you land (Loki).
+    # These uids come from res/provisioning/datasources/datasources.yaml.
+    sourceDatasourceUid: prom-lab
+    targetDatasourceUid: loki-lab
+
+    type: query
+
+    config:
+      type: query
+
+      # The field on the source result whose value is passed through. The
+      # Prometheus series carries a `status` label, so clicking a point on the
+      # 404 series makes `${status}` resolve to "404".
+      field: status
+
+      target:
+        # `status` is a real Loki label here because Alloy promotes it in
+        # res/config/alloy.alloy. If it were only a parsed JSON field, this
+        # would have to be `{service="employee-service"} | json | status="${status}"`
+        # instead - correct, but slower, since it cannot use the label index.
+        expr: '{service="employee-service", status="${status}"} | json'
+
+      transformations: []

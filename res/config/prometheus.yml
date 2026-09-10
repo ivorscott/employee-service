@@ -1,5 +1,6 @@
 global:
-  scrape_interval:     15s
+  # 5s for a snappier lab feedback loop (default was 15s)
+  scrape_interval:     5s
   evaluation_interval: 15s
 
 # define where prometheus get its data
@@ -7,8 +8,12 @@ scrape_configs:
   - job_name: prometheus
     static_configs:
       - targets: ['localhost:9090']
+
   - job_name: employee-service
     metrics_path: /metrics
     static_configs:
+      # The app runs as a container in this lab, so scrape it by service name.
+      # If you instead run the app on the host (`make develop`), swap this for:
+      #   - host.docker.internal:8080
       - targets:
-          - host.docker.internal:8080
+          - employee-service:8080

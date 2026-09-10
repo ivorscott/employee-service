@@ -1,19 +1,17 @@
-FROM golang:1.17-alpine as base
+FROM golang:1.26-alpine AS base
 ENV CGO_ENABLED=0
 WORKDIR /employees
 COPY go.* ./
 RUN go mod download && go mod verify
 COPY . .
 
-FROM base as build-stage
+FROM base AS build-stage
 RUN go build -o main ./cmd/employee
 
-FROM aquasec/trivy:0.4.4 as image-scan
-RUN trivy alpine:3.15 && \
-    echo "No image vulnerabilities" > result
-
-FROM alpine:3.15 as prod
-COPY --from=image-scan result secure
+FROM alpine:3.21 AS prod
+WORKDIR /employees
+# the zap logger tees to ./log/out.log and panics if the path is not writable
+RUN mkdir -p /employees/log
 COPY --from=build-stage /employees/main main
-EXPOSE 8080 
+EXPOSE 8080
 CMD ["./main"]

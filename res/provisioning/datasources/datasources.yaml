@@ -1,0 +1,24 @@
+apiVersion: 1
+
+# Fixed uids matter: the provisioned dashboard and any correlation you create
+# reference datasources by uid, not by name. Pinning them keeps those
+# references stable across a `docker compose down -v`.
+datasources:
+  - name: Prometheus
+    uid: prom-lab
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    jsonData:
+      httpMethod: POST
+      timeInterval: 5s
+
+  - name: Loki
+    uid: loki-lab
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      # Keep this modest; the lab's log volume is tiny.
+      maxLines: 1000

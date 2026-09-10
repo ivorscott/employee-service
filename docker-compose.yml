@@ -1,11 +1,21 @@
 # Development Settings (Not for production)
-# xpack.security.enabled=false # hides security warning in kibana dev tools
-# ES_JAVA_OPTS=-Xms512m -Xmx512m # restricts heap usage
+#
+# Default `docker compose up -d` starts and seeds the LAB stack:
+#   employee (postgres), rabbitmq, employee-service, seed, prometheus, loki, alloy, grafana, loadgen
+# `seed` is a one-shot job that waits for employee-service to be healthy, then
+# populates the employees table and exits. Re-run it on demand with `make seed`.
+#
+# The original ELK logging stack is preserved under the `elk` profile and does
+# NOT start by default (3 Elasticsearch nodes are heavy and Loki replaces it here):
+#   docker compose --profile elk up -d
+#
+# Other opt-in profiles:
+#   docker compose --profile tracing up -d      # jaeger
+#   docker compose --profile test up -d         # employee_test fixture db
 
-version: '2.4'
 services:
   employee:
-    image: postgres:13.5
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: $POSTGRES_DB
       POSTGRES_USER: $POSTGRES_USER
@@ -18,9 +28,12 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - employee_data:/var/lib/postgresql/data
+    networks:
+      - db
 
   employee_test: # for test fixtures
-    image: postgres:13.5
+    profiles: [ test ]
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: $TEST_POSTGRES_DB
       POSTGRES_USER: $TEST_POSTGRES_USER
@@ -33,8 +46,224 @@ services:
       - "${TEST_POSTGRES_PORT}:5432"
     volumes:
       - employee_testdata:/var/lib/postgresql/data
+    networks:
+      - db
+  # The service under observation. Runs in a container for this lab so no host
+  # Go toolchain, CompileDaemon or swagger-codegen is required.
+  #
+  # It logs zap JSON to BOTH ./log/out.log and stdout (see cmd/employee/logger.go),
+  # and stdout is what Alloy ships to Loki - the same shape as a Kubernetes pod log.
+  employee-service:
+    build:
+      context: .
+      target: prod
+    environment:
+      API_DB_HOST: employee
+      API_DB_USER: $POSTGRES_USER
+      API_DB_PASSWORD: $POSTGRES_PASSWORD
+      API_DB_NAME: $POSTGRES_DB
+      API_DB_DISABLE_TLS: "true"
+      # NOTE: ardanlabs/conf splits camelCase field names, so the `RabbitMQ`
+      # struct becomes RABBIT_MQ, not RABBITMQ. Run `./main --help` in the
+      # container to see the authoritative list of env vars.
+      API_RABBIT_MQ_HOST: rabbitmq
+      API_RABBIT_MQ_USER: guest
+      API_RABBIT_MQ_PASSWORD: guest
+    depends_on:
+      employee:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O- http://localhost:8080/metrics >/dev/null 2>&1 || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      start_period: 20s
+      retries: 5
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - obsrv
+      - msg
+      - db
+  # One-shot database seeder. The employees table is created by the app's
+  # own migrations at startup, so this must run AFTER employee-service is
+  # healthy. It has no profile, so `docker compose up -d` runs it
+  # automatically right after employee-service becomes healthy - no separate
+  # `docker compose run --rm seed` step needed. It exits 0 once done; the
+  # seed data is idempotent (DELETE + INSERT) so re-running `up` is safe.
+  # To re-seed on demand: `make seed` / `docker compose run --rm seed`.
+  seed:
+    image: postgres:16-alpine
+    environment:
+      PGPASSWORD: $POSTGRES_PASSWORD
+    depends_on:
+      employee-service:
+        condition: service_healthy
+    volumes:
+      - ./res/seed:/seed:ro
+    entrypoint: [ "psql", "-h", "employee", "-U", "$POSTGRES_USER", "-d",
+                  "$POSTGRES_DB",
+                  "-f", "/seed/data.sql" ]
+    networks:
+      - db
 
+  # ==========================================================================
+  # On-demand DB tools (profile `tools`, never started by `up`).
+  #
+  # These exist so that NOTHING has to be installed on your host to work with
+  # the database - no migrate binary, no psql, no pgcli. They also address the
+  # database by its compose service name (`employee:5432`) rather than through
+  # the published host port, which matters: if you happen to run postgres
+  # natively on your machine, it shadows the container on localhost:5432 and
+  # host-installed tools will silently talk to the WRONG database.
+  #
+  # Driven by the Makefile: `make migrate-up`, `make migrate-version`, `make db`.
+  # ==========================================================================
+  migrate:
+    profiles: [ tools ]
+    image: migrate/migrate:v4.18.1
+    depends_on:
+      employee:
+        condition: service_healthy
+    volumes:
+      - ./res/migrations:/migrations
+    entrypoint: [ "migrate", "-path", "/migrations", "-database",
+                  "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@employee:5432/$POSTGRES_DB?sslmode=$POSTGRES_SSL" ]
+    networks:
+      - db
+
+  pgcli:
+    profiles: [ tools ]
+    image: devpies/pgcli
+    depends_on:
+      employee:
+        condition: service_healthy
+    entrypoint: [ "pgcli" ]
+    command: [ "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@employee:5432/$POSTGRES_DB?sslmode=$POSTGRES_SSL" ]
+    networks:
+      - db
+  # Generates a mix of 200 / 400 / 404 responses so the dashboards and the
+  # correlation have something to click. See res/config/loadgen.sh.
+  loadgen:
+    image: curlimages/curl:8.13.0
+    depends_on:
+      employee-service:
+        condition: service_healthy
+    volumes:
+      - ./res/config/loadgen.sh:/loadgen.sh:ro
+    entrypoint: [ "sh", "/loadgen.sh" ]
+    restart: unless-stopped
+    networks:
+      - msg
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    volumes:
+      - ./res/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - obsrv
+
+  loki:
+    image: grafana/loki:3.5.1
+    command: [ "-config.file=/etc/loki/loki.yaml" ]
+    volumes:
+      - ./res/config/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O- http://localhost:3100/ready | grep -q ready || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      start_period: 30s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - obsrv
+
+  # Log shipper. Promtail is end-of-life, so this lab uses Grafana Alloy -
+  # it discovers containers over the Docker socket, parses the zap JSON and
+  # pushes to Loki. See res/config/alloy.alloy.
+  alloy:
+    image: grafana/alloy:v1.11.0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./res/config/alloy.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
+    depends_on:
+      loki:
+        condition: service_healthy
+    ports:
+      - "12345:12345"
+    restart: unless-stopped
+    networks:
+      - obsrv
+
+  grafana:
+    image: grafana/grafana:12.3.0
+    environment:
+      # Anonymous admin access - lab convenience only, never do this elsewhere.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_BASIC_ENABLED: "false"
+      GF_FEATURE_TOGGLES_ENABLE: correlations
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./res/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    networks:
+      - obsrv
+
+  jaeger:
+    profiles: [ tracing ]
+    image: jaegertracing/all-in-one:1.29
+    ports:
+      - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
+      - "16686:16686"   # HTTP server (browser UI)
+    networks:
+      - obsrv
+
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 10
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - msg
+  # ==========================================================================
+  # Original ELK stack - preserved, but off by default. `--profile elk`
+  # ==========================================================================
   elasticsearch:
+    profiles: [ elk ]
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
       - node.name=elasticsearch
@@ -57,8 +286,11 @@ services:
       retries: 10
     ports:
       - "9200:9200"
+    networks:
+      - obsrv
 
   es02:
+    profiles: [ elk ]
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
       - node.name=es02
@@ -73,8 +305,11 @@ services:
         hard: -1
     volumes:
       - elasticsearch_data_2:/usr/share/elasticsearch/data
+    networks:
+      - obsrv
 
   es03:
+    profiles: [ elk ]
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
       - node.name=es03
@@ -89,8 +324,11 @@ services:
         hard: -1
     volumes:
       - elasticsearch_data_3:/usr/share/elasticsearch/data
+    networks:
+      - obsrv
 
   filebeat:
+    profiles: [ elk ]
     image: docker.elastic.co/beats/filebeat:6.5.1
     depends_on:
       elasticsearch:
@@ -98,72 +336,50 @@ services:
     volumes:
       - ./res/config/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./log/:/log/
+    networks:
+      - obsrv
 
   logstash:
+    profiles: [ elk ]
     image: docker.elastic.co/logstash/logstash:7.11.2
     volumes:
       - ./res/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     depends_on:
       elasticsearch:
         condition: service_healthy
+    networks:
+      - obsrv
 
   kib01:
-      image: docker.elastic.co/kibana/kibana:7.16.1
-      environment:
-        ELASTICSEARCH_URL: http://elasticsearch:9200
-        ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200","http://es02:9200","http://es03:9200"]'
-      healthcheck:
-        test: [ "CMD", "curl", "-s", "-f", "http://localhost:5601/api/status" ]
-        interval: 5s
-        timeout: 3s
-        start_period: 30s
-        retries: 5
-      ports:
-        - "5601:5601"
-
-  grafana:
-    image: grafana/grafana:8.3.3
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-
-  prometheus:
-    image: prom/prometheus:v2.24.0
-    volumes:
-      - ./res/config/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    ports:
-      - 9090:9090
-    restart: always
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.29
+    profiles: [ elk ]
+    image: docker.elastic.co/kibana/kibana:7.16.1
     environment:
-      JAEGER_DISABLED: true
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200","http://es02:9200","http://es03:9200"]'
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "-f", "http://localhost:5601/api/status" ]
+      interval: 5s
+      timeout: 3s
+      start_period: 30s
+      retries: 5
     ports:
-      - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
-      - "16686:16686"   # HTTP server (browser UI)
-
-  rabbitmq:
-    image: rabbitmq:3.9.13-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./data/rabbitmq/data:/var/lib/rabbitmq/
-      - ./data/rabbitmq/log/:/var/log/rabbitmq
+      - "5601:5601"
+    networks:
+      - obsrv
 
 volumes:
   employee_data:
   employee_testdata: # for test fixtures
   grafana_data:
   prometheus_data:
+  loki_data:
+  alloy_data:
+  rabbitmq_data:
   elasticsearch_data_1:
   elasticsearch_data_2:
   elasticsearch_data_3:
+
+networks:
+    obsrv:
+    msg:
+    db:

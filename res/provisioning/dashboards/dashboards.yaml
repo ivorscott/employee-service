@@ -1,0 +1,14 @@
+apiVersion: 1
+
+providers:
+  - name: lab
+    orgId: 1
+    folder: 'Observability Lab'
+    type: file
+    disableDeletion: false
+    # Allow editing in the UI. Note that saved edits are overwritten on restart
+    # unless you also export the JSON back into this folder.
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false

@@ -1,0 +1,141 @@
+{
+  "uid": "employee-lab",
+  "title": "Employee Service - Correlation Lab",
+  "tags": ["lab", "correlation"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "About this dashboard",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "The **Response status** panel below is the one the lab correlates. Prometheus label `status` on `response_status` matches the Loki label `status` promoted by Alloy, so a click can carry the value straight into a log query. Follow `LAB.md` in the repo root."
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Response status (rate/s) - correlate from here",
+      "description": "sum by (status) of response_status. The `status` label is the join key to Loki.",
+      "datasource": { "type": "prometheus", "uid": "prom-lab" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prom-lab" },
+          "expr": "sum by (status) (rate(response_status[1m]))",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Requests by path (rate/s)",
+      "description": "sum by (path) of http_requests_total. Note `path` is the ROUTE TEMPLATE (/employees/{employee_id}), not the concrete URL - that asymmetry with the logs is the point.",
+      "datasource": { "type": "prometheus", "uid": "prom-lab" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prom-lab" },
+          "expr": "sum by (path) (rate(http_requests_total[1m]))",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "p95 latency - INTENTIONALLY BROKEN (see LAB.md, Exercise 6)",
+      "description": "This reads ~0 forever. pkg/middleware/metric.go starts the prometheus timer AFTER the handler has already run, so it measures the bookkeeping, not the request. A real instrumentation bug, left in place as an exercise.",
+      "datasource": { "type": "prometheus", "uid": "prom-lab" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prom-lab" },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_response_time_seconds_bucket[5m])))",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "logs",
+      "title": "Live logs from Loki (proof the pipeline works)",
+      "description": "If this is empty, Alloy is not shipping. Check `docker compose logs alloy`.",
+      "datasource": { "type": "loki", "uid": "loki-lab" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki-lab" },
+          "expr": "{service=\"employee-service\"} | json",
+          "queryType": "range"
+        }
+      ]
+    }
+  ]
+}

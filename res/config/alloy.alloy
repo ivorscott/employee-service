@@ -1,0 +1,83 @@
+// Grafana Alloy: ship Docker container logs into Loki.
+//
+// Promtail is end-of-life, so this lab uses Alloy. The pipeline mirrors what a
+// Kubernetes log shipper does: discover workloads, attach identifying labels,
+// parse the structured log line, push to Loki.
+
+logging {
+  level = "warn"
+}
+
+// 1. Discover every container on the Docker socket.
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// 2. Turn Docker metadata into Loki labels.
+//    Docker prefixes container names with "/", so strip it.
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+// 3. Read the container stdout/stderr streams.
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  labels     = { job = "docker" }
+  forward_to = [loki.process.zap_json.receiver]
+}
+
+// 4. Parse the zap JSON the employee-service writes to stdout, then promote a
+//    FEW fields to Loki labels.
+//
+//    THIS IS THE LESSON THE LAB TURNS ON:
+//    - `status`, `method` and `level` are low-cardinality (a handful of values
+//      ever), so they are safe as labels and therefore fast to filter on. A
+//      Grafana correlation can match a Prometheus `status` label to these.
+//    - `endpoint` is deliberately NOT promoted. It contains a concrete URL with
+//      an employee UUID in it, so making it a label would create one Loki
+//      stream per UUID and blow up cardinality. It stays a parsed field you
+//      extract at query time with `| json`.
+//
+//    That asymmetry - metrics carry the low-cardinality route template, logs
+//    carry the high-cardinality concrete value - is exactly why correlations
+//    get you to "the right pod and second", not "this exact request".
+loki.process "zap_json" {
+  stage.json {
+    expressions = {
+      level    = "level",
+      status   = "status",
+      method   = "method",
+      endpoint = "endpoint",
+      msg      = "msg",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level  = "",
+      status = "",
+      method = "",
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+// 5. Push to Loki.
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
