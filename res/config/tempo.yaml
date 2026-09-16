@@ -4,6 +4,8 @@
 # The metrics-generator turns incoming spans into RED metrics and a service
 # graph, and remote_writes them to Prometheus - that's what powers the
 # "Service structure" tab and node graph in Grafana's Traces Drilldown app.
+# The local-blocks processor additionally serves TraceQL metrics (span rate,
+# breakdown panels) straight from Tempo - Traces Drilldown requires it.
 server:
   http_listen_port: 3200
 
@@ -44,4 +46,4 @@ storage:
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics]
+      processors: [service-graphs, span-metrics, local-blocks]
