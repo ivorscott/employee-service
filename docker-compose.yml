@@ -1,8 +1,8 @@
 # Development Settings (Not for production)
 #
 # Default `docker compose up -d` starts and seeds the LAB stack:
-#   employee (postgres), rabbitmq, employee-service, seed, prometheus, tempo,
-#   loki, alloy, grafana, loadgen
+#   employee (postgres), rabbitmq, employee-service, verification-service,
+#   seed, prometheus, tempo, loki, alloy, grafana, loadgen
 # `seed` is a one-shot job that waits for employee-service to be healthy, then
 # populates the employees table and exits. Re-run it on demand with `make seed`.
 #
@@ -70,12 +70,15 @@ services:
       API_RABBIT_MQ_USER: guest
       API_RABBIT_MQ_PASSWORD: guest
       API_TRACE_OTLP_ENDPOINT: tempo:4318
+      API_VERIFICATION_ADDRESS: http://verification-service:8090
     depends_on:
       employee:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
       tempo:
+        condition: service_started
+      verification-service:
         condition: service_started
     healthcheck:
       test: [ "CMD-SHELL", "wget -q -O- http://localhost:8080/metrics >/dev/null 2>&1 || exit 1" ]
@@ -90,6 +93,22 @@ services:
       - obsrv
       - msg
       - db
+  # Downstream hop called by employee-service on every lookup (see
+  # cmd/verification). It exists purely so traces span two processes and
+  # Tempo's service graph has a real second node instead of just
+  # employee-service and a virtual caller.
+  verification-service:
+    build:
+      context: .
+      target: verification
+    environment:
+      API_TRACE_OTLP_ENDPOINT: tempo:4318
+    depends_on:
+      tempo:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - obsrv
   # One-shot database seeder. The employees table is created by the app's
   # own migrations at startup, so this must run AFTER employee-service is
   # healthy. It has no profile, so `docker compose up -d` runs it

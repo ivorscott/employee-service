@@ -27,6 +27,18 @@ time of revival). Format loosely follows [Keep a Changelog](https://keepachangel
   metrics-generator processor specifically - `service-graphs` and
   `span-metrics` alone aren't enough. Added it to `res/config/tempo.yaml`.
 
+### Added
+- **`verification-service`** (`cmd/verification`), a small standalone HTTP
+  service that `employee-service` calls on every lookup. With only
+  `employee-service` instrumented, Tempo's service graph only ever has one
+  real node - the caller (loadgen/curl) doesn't propagate trace context, so
+  it shows up as a "virtual" `user` node. `employee-service` now calls
+  `verification-service` with an `otelhttp`-instrumented client
+  (`pkg/handler/employee.go`), which injects the `traceparent` header, so the
+  same trace id spans both processes. That gives a real three-node service
+  graph (`user → employee-service → verification-service`) and a waterfall
+  with more than one span to correlate across.
+
 ### Changed
 - Replaced Jaeger with [Tempo](https://grafana.com/oss/tempo/) as the trace
   backend (`docker-compose.yml`, `res/config/tempo.yaml`). Tempo's

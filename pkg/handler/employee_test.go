@@ -48,7 +48,7 @@ func setupEmployeeRouter() (http.Handler, employeeHandlerDeps) {
 	service := &mocks.EmployeeService{}
 	publisher := &mocks.RabbitmqAdapter{}
 
-	employee := handler.NewEmployeeHandler(logger, service, publisher)
+	employee := handler.NewEmployeeHandler(logger, service, publisher, "http://localhost:8090")
 
 	router.Methods("GET").Path("/employees/{employee_id}").
 		HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

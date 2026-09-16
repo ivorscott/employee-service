@@ -80,7 +80,7 @@ func run(logger *zap.Logger, cfg *config.AppConfig) error {
 
 	employeeRepository := repository.NewEmployeeRepository(repo)
 	employeeService := service.NewEmployeeService(logger, employeeRepository)
-	employeeHandler := handler.NewEmployeeHandler(logger, employeeService, publisher)
+	employeeHandler := handler.NewEmployeeHandler(logger, employeeService, publisher, cfg.Verification.Address)
 
 	// Listen to incoming messages
 	go func() {

@@ -46,6 +46,11 @@ type AppConfig struct {
 		OTLPEndpoint string `conf:"default:localhost:4318"`
 		Disabled     bool   `conf:"default:false"`
 	}
+	Verification struct {
+		// Address of the verification-service, called on employee lookup so the
+		// lab has a second real hop to show in the trace waterfall and service graph.
+		Address string `conf:"default:http://localhost:8090"`
+	}
 }
 
 // NewAppConfig creates a new AppConfig for the application.
