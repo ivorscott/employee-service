@@ -21,6 +21,11 @@ time of revival). Format loosely follows [Keep a Changelog](https://keepachangel
      Loki), and Grafana 12's Traces Drilldown app requires a Tempo-compatible
      datasource specifically - the old Jaeger-native node graph in Explore
      isn't wired into that app.
+- **Traces Drilldown showed "TraceQL metrics not configured" / "localblocks
+  processor not found"** even after Tempo was wired up and traces were
+  landing fine. The app's span-rate/breakdown panels need the `local-blocks`
+  metrics-generator processor specifically - `service-graphs` and
+  `span-metrics` alone aren't enough. Added it to `res/config/tempo.yaml`.
 
 ### Changed
 - Replaced Jaeger with [Tempo](https://grafana.com/oss/tempo/) as the trace
