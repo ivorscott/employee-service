@@ -1,7 +1,8 @@
 # Development Settings (Not for production)
 #
 # Default `docker compose up -d` starts and seeds the LAB stack:
-#   employee (postgres), rabbitmq, employee-service, seed, prometheus, loki, alloy, grafana, loadgen
+#   employee (postgres), rabbitmq, employee-service, seed, prometheus, tempo,
+#   loki, alloy, grafana, loadgen
 # `seed` is a one-shot job that waits for employee-service to be healthy, then
 # populates the employees table and exits. Re-run it on demand with `make seed`.
 #
@@ -10,7 +11,6 @@
 #   docker compose --profile elk up -d
 #
 # Other opt-in profiles:
-#   docker compose --profile tracing up -d      # jaeger
 #   docker compose --profile test up -d         # employee_test fixture db
 
 services:
@@ -69,11 +69,14 @@ services:
       API_RABBIT_MQ_HOST: rabbitmq
       API_RABBIT_MQ_USER: guest
       API_RABBIT_MQ_PASSWORD: guest
+      API_TRACE_OTLP_ENDPOINT: tempo:4318
     depends_on:
       employee:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      tempo:
+        condition: service_started
     healthcheck:
       test: [ "CMD-SHELL", "wget -q -O- http://localhost:8080/metrics >/dev/null 2>&1 || exit 1" ]
       interval: 5s
@@ -168,6 +171,8 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
+      # Lets Tempo's metrics-generator remote_write RED metrics + service graph.
+      - '--web.enable-remote-write-receiver'
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -231,16 +236,29 @@ services:
     depends_on:
       - prometheus
       - loki
+      - tempo
     restart: unless-stopped
     networks:
       - obsrv
 
-  jaeger:
-    profiles: [ tracing ]
-    image: jaegertracing/all-in-one:1.29
+  # Traces backend for Grafana's Traces Drilldown app. Receives OTLP spans
+  # from employee-service and also runs a metrics-generator that derives RED
+  # metrics + a service graph and remote_writes them to Prometheus (see
+  # res/config/tempo.yaml) - that's what powers the "Service structure" tab
+  # and node graph.
+  tempo:
+    image: grafana/tempo:2.6.1
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./res/config/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
     ports:
-      - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
-      - "16686:16686"   # HTTP server (browser UI)
+      - "3200:3200"   # query API (Grafana datasource)
+      - "4318:4318"   # OTLP HTTP receiver
+    depends_on:
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
     networks:
       - obsrv
 
@@ -372,6 +390,7 @@ volumes:
   employee_testdata: # for test fixtures
   grafana_data:
   prometheus_data:
+  tempo_data:
   loki_data:
   alloy_data:
   rabbitmq_data:

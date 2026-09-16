@@ -5,9 +5,10 @@ import (
 	"context"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -17,7 +18,8 @@ import (
 // ProviderConfig represents the provider configuration and used to create a new
 // `Provider` type.
 type ProviderConfig struct {
-	JaegerEndpoint string
+	// OTLPEndpoint is the host:port of an OTLP/HTTP trace receiver (e.g. Tempo).
+	OTLPEndpoint   string
 	ServiceName    string
 	ServiceVersion string
 	Environment    string
@@ -32,15 +34,17 @@ type Provider struct {
 	provider trace.TracerProvider
 }
 
-// NewProvider returns a new `Provider` type. It uses Jaeger exporter and globally sets
-// the tracer provider as well as the global tracer for spans.
+// NewProvider returns a new `Provider` type. It uses an OTLP/HTTP exporter and
+// globally sets the tracer provider as well as the global tracer for spans.
 func NewProvider(config ProviderConfig) (Provider, error) {
 	if config.Disabled {
-		return Provider{provider: trace.NewNoopTracerProvider()}, nil
+		return Provider{provider: noop.NewTracerProvider()}, nil
 	}
 
-	exp, err := jaeger.New(
-		jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(config.JaegerEndpoint)),
+	exp, err := otlptracehttp.New(
+		context.Background(),
+		otlptracehttp.WithEndpoint(config.OTLPEndpoint),
+		otlptracehttp.WithInsecure(),
 	)
 	if err != nil {
 		return Provider{}, err

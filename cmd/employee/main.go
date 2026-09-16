@@ -40,11 +40,11 @@ func main() {
 
 	ctx := context.Background()
 	prv, err := trace.NewProvider(trace.ProviderConfig{
-		JaegerEndpoint: "http://localhost:14268/api/traces",
+		OTLPEndpoint:   cfg.Trace.OTLPEndpoint,
 		ServiceName:    "employee-service",
 		ServiceVersion: "1.0.0",
 		Environment:    "dev",
-		Disabled:       false,
+		Disabled:       cfg.Trace.Disabled,
 	})
 	if err != nil {
 		logger.Fatal("", zap.Error(err))

@@ -22,3 +22,22 @@ datasources:
     jsonData:
       # Keep this modest; the lab's log volume is tiny.
       maxLines: 1000
+
+  - name: Tempo
+    uid: tempo-lab
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki-lab
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        filterByTraceID: true
+        filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: prom-lab
+      serviceMap:
+        datasourceUid: prom-lab
+      nodeGraph:
+        enabled: true

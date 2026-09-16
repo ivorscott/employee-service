@@ -233,8 +233,8 @@ Those are Grafana's built-in interpolation variables:
 not hover). A menu appears with your link. Follow it: Explore opens, filtered to
 `status="404"`, over the same window.
 
-You have just replaced the manual timestamp-matching that the `cps-txl` investigation
-needed.
+You have just replaced the manual timestamp-matching that a real production incident
+investigation would otherwise need.
 
 > **A gotcha you will hit.** In the Explore results, expand a log line. You will see both
 > `status` *and* `status_extracted`. When `| json` parses a field whose name collides with
@@ -438,14 +438,14 @@ next to it. A dashboard alone would never have told you.
 You now have specifics rather than "can we make dashboards clickable." Concretely:
 
 **1. Is there a Loki (or equivalent) datasource for these clusters at all?**
-On `cps-txl` there was no log-shipping stack in the cluster — nothing to correlate *to*.
+Some clusters have no log-shipping stack at all — nothing to correlate *to*.
 That is question zero; everything else depends on it.
 
 **2. Which fields are promoted to labels at ingest?**
 The correlation is only fast if the join key is an indexed label. Ask what the shipper
-promotes today, and request a small, named set of low-cardinality fields — for the event
-gateway, something like `grpc_method` and `grpc_code`. Bring the cardinality argument
-with you: you are asking for a handful of values, not UUIDs.
+promotes today, and request a small, named set of low-cardinality fields — for an
+internal gRPC service, something like `grpc_method` and `grpc_code`. Bring the
+cardinality argument with you: you are asking for a handful of values, not UUIDs.
 
 **3. Correlations, not per-panel data links.**
 Datasource-scoped, so it works across every dashboard without per-panel edits.

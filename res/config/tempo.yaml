@@ -1,0 +1,47 @@
+# Minimal single-binary Tempo for local labs: local filesystem storage, no
+# auth, no multi-tenancy. Not a production topology.
+#
+# The metrics-generator turns incoming spans into RED metrics and a service
+# graph, and remote_writes them to Prometheus - that's what powers the
+# "Service structure" tab and node graph in Grafana's Traces Drilldown app.
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+        grpc:
+
+ingester:
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 1h
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: /var/tempo/generator/traces
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics]

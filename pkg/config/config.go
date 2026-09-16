@@ -41,6 +41,11 @@ type AppConfig struct {
 		Password string `conf:"default:guest,noprint"`
 		Host     string `conf:"default:localhost,noprint"`
 	}
+	Trace struct {
+		// OTLPEndpoint is the host:port of an OTLP/HTTP trace receiver (e.g. Tempo).
+		OTLPEndpoint string `conf:"default:localhost:4318"`
+		Disabled     bool   `conf:"default:false"`
+	}
 }
 
 // NewAppConfig creates a new AppConfig for the application.
