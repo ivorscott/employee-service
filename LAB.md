@@ -71,12 +71,23 @@ docker compose logs seed               # expect: DELETE 0 / INSERT 0 2
 | `loki` | 3100 | Log store. |
 | `alloy` | 12345 | Log shipper: Docker socket → parse JSON → push to Loki. |
 | `grafana` | 3000 | Anonymous admin access, no login needed. |
+| `tempo` | 3200 / 4318 | Trace store. Receives OTLP spans and derives RED metrics + a service graph. |
+| `verification-service` | 8090 | Downstream hop called by `employee-service` on every lookup, purely so traces span two processes. |
 | `loadgen` | — | Generates a 200/400/404 mix continuously. |
 | `seed` | — | One-shot job: seeds the `employees` table, then exits. Re-run with `make seed`. |
 
 The original ELK stack (3 Elasticsearch nodes, Filebeat, Logstash, Kibana) is preserved
 but **off by default** — it is heavy and Loki replaces it here. Start it with
 `docker compose --profile elk up -d` if you ever want to compare the two approaches.
+
+> **Where's the trace node graph?** This lab is about metrics↔logs correlation, but
+> tracing rides along for free since `employee-service` is already instrumented. Don't
+> look for a node graph in **Drilldown → Traces** — Grafana 12's Traces Drilldown app
+> only shows a text "Service & Operation" tree under its **Service structure** tab, not
+> a visual graph. The actual node-and-edges diagram lives in classic **Explore**: pick
+> the **Tempo** datasource, switch the query type to **Service Graph**, and run it. You
+> should see `user → employee-service → verification-service` with live request rates
+> and durations on each edge.
 
 ### Checkpoint 1 — is the data actually flowing?
 
@@ -502,7 +513,8 @@ make reset    # delete volumes and start clean
 
 | File | Role |
 |---|---|
-| `docker-compose.yml` | Whole stack; ELK/tracing/test behind profiles |
+| `docker-compose.yml` | Whole stack; ELK/test behind profiles, tracing (Tempo, verification-service) on by default |
+| `res/config/tempo.yaml` | Tempo config — receivers, storage, metrics-generator processors |
 | `res/config/alloy.alloy` | Log pipeline — **where labels vs fields is decided** |
 | `res/config/loki.yaml` | Minimal single-binary Loki |
 | `res/config/prometheus.yml` | Scrape config |
